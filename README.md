@@ -49,11 +49,11 @@ I was able to build the project from a clean SMW ROM with the following steps:
 - Stick the clean rom in the rom directory, named something convenient (I used 
 coop.smc)
 - Open the ROM in Lunar Magic
-- - Check the checkbox in the Options menu for "Used joined GFX files"
-- - Press the green mushroom button to insert AllGFX.bin
-- - Click the rainbow star, then the red star with the red arrow
-- - Select the cmc.pal file in the rom directory
-- - Click the save button in the Palette Editor
+- Check the checkbox in the Options menu for "Used joined GFX files"
+- Press the green mushroom button to insert AllGFX.bin
+- Click the rainbow star, then the red star with the red arrow
+- Select the cmc.pal file in the rom directory
+- Click the save button in the Palette Editor
 - Find some freespace (the patch requires 20,000 bytes right now)
 - Mark the freespace in co-op.asm
 - Run the following, in the src directory: `<path to xkas> co-op.asm ../rom/coop.smc`
