@@ -1,0 +1,169 @@
+List A: RAM Map
+0DA3  :  Controller Data 1: byetUDLR
+0DA5  :  Controller Data 2: axlr0000
+0DA7  :  Controller Data 1, 1 frame
+0DA9  :  Controller Data 2, 1 frame
+
+0DB3  :  2-player flag
+0DB4  :  P1 Lives
+0DB5  :  P2 lives
+0DB9  :  CDUPPWDS flags. Carrying, Debug, looking Up, Powerup, in Water, Ducking, Spinjumping
+
+0F3A  :  Mario's frame, translated into CMC frames
+0F3B  :  Mario's current extra thing set
+0F3C  :  Address from which to upload Mario's head tile (16-bit)
+0F3E  :  Address from which to upload Mario's foot tile (16-bit)
+0F42  :  Luigi's frame, translated into CMC frames
+0F43  :  Luigi's current extra thing set
+0F44  :  Address from which to upload Luigi's head tile (16-bit)
+0F46  :  Address from which to upload Luigi's foot tile (16-bit)
+
+0F5E  :  unused!
+0F5F  :  unused!
+0F60  :  unused!
+0F61  :  number of enemies bounced on
+0F62  :  number of enemies killed w/ star
+0F63  :  ----LLMM flags. 00 - Died 01 - Bubble 10 - Inactive, but effecting play 11 - active
+0F64  :  Transtimeline messaging flags: ------RJ standing on Rotating Plat/Jump Autocorrect flag
+0F65  :  sprite index of luigi
+0F66  :  Time until relevant player should respawn in bubble
+0F67  :  Used to simulate weightlessness of mario - used for mario's yspeed since that'll be gravity'd every frame
+0F68  :  Number of lives to give Luigi. like $18E4
+0F69  :  Kind of slope Luigi is on. like $13EE
+0F6A  :  -USBECNP flags. Water Surface, Sliding, Behind scenery, climbing-on-Edge, Climbing, climbing-on-Net, Sprinting
+0F6B  :  unused!
+0F6C  :  unused!
+0F6D  :  unused!
+0F6E  :  unused!
+0F6F  :  unused!
+0F71  :  unused!
+
+142C-142F: various scratch
+
+1504,x:  Current animation. See List A. Set high bit to teleport afterwards.
+1510,x:  unused
+151C,x:  Animation Timer. Like $1496
+1528,x:  Will always be #$75. Used to identify sprite.
+1534,x:  Cape image. Like $13DF
+1540,x:  Animation timer? Marked as flashing timer
+154C,x:  timer to show picking up frame or kicking frame
+1558,x:  used to indicate whether or not player is turning around. Used in graphics rt and sliding-smoke
+1564,x:  Time to show fireball frame
+1570,x:  star timer
+157C,x:  direction. 0=left 1=right
+1588,x:  like mario's $77 - Player Blocked Status
+1594,x:  cape frame timer
+15AC,x:  Swimming frame timer
+1602,x:  unused
+160E,x:  unused
+163E,x:  Dash timer
+164A,x:  sprite's buoyancy. 1 if in water/lava/etc
+
+7FAC60: Sprite table for number of vertical pixels moved per frame
+7FAC6C: Sprite table for number of horizontal pixels moved per frame
+
+
+List A2: Reserved OAM:
+Mario:
+0310 - Head (0464, 0411 low)
+0314 - Foot (0465, 0411 mlow)
+0318 - Top 8x8 (0466, 0411 mhigh)
+031C - Bottom 8x8 (0467, 0411 high)
+0320 - Cape (0468, 0412 low)
+
+Luigi:
+0328 - Head (0469, 0412 mhigh)
+032C - Foot (046A, 0412 high)
+0330 - Top 8x8 (046B, 0413 low)
+0334 - Bottom 8x8 (046C, 0413 mlow)
+0338 - Cape (046D, 0413 mhigh)
+
+Bubble:
+033C - Top Left (046E, 0413 high)
+0340
+0344 - Who cares
+0348
+034C
+
+List B: Animations ($1504,x + $151C,x)
+00 - Nothing
+01 - Pipe Walk Left
+02 - Pipe Walk Right
+03 - Pipe Up
+04 - Pipe Down
+05 - Freeze
+06 - Get Hurt
+07 - Get Mushroom
+08 - Get Flower
+09 - Shoot from Diagonal Pipe
+0A - Get Cape
+
+
+List C: Graphical frames ($0F3A/$0F42)
+00 - Standing
+01 - Walk 1
+02 - Walk 2
+03 - Sprint 1
+04 - Sprint 2
+05 - Sprint 3
+06 - Carrying, Standing
+07 - Carrying, Walk 1
+
+08 - Carrying, Walk 2
+09 - Jump
+0A - Face Screen (Spinjump 1)
+0B - Face Background (Spinjump 2)
+0C - Ducking
+0D - Looking Up
+0E - Turning
+0F - Fireball
+
+10 - Climbing
+11 - Victory Pose
+12 - Carrying, Ducking
+13 - Kicking
+14 - Falling
+15 - Death
+16 - Sliding
+17 - Carrying, Looking up
+
+18 - Jumping, Fireball
+19 - Jumping, Sprinting
+1A - Swim A
+1B - Swim B
+1C - Swim C
+1D - Swim D
+1E - Swim E
+
+
+List D: TODOs
+-what is $0DBE for? - DONE It's mario's lives silly!
+-add addr for minor animation timing: walking, running, climbing etc. also add climbing flipping - DONE
+-ANIMATIONS! - DONE
+-Boss doors
+-regular doors only entered at certain points
+-Finish slope interaction
+-Fix running through slopes... is this even possible? OF COURSE IT IS!
+-Transition frame address from 1510,x to 0F42 - DONE
+-Restore hijacks from DSX.asm; transfer all DMA code to the extiles hijack. - DONE
+-Fix frame of layer priority issues for pipes - DONE
+-Fix images walking in pipes - DONE
+-Fix goal march victory posing - DONE
+-Add CMC player names, overworld - DONE
+-Pester Miles for OW graphics - DONE
+-Names in life swap/scorecard
+-Fix SB and SC tail positioning for runjump/firejump - DONE
+-Do something about title sequence
+-Expanding/shrinking turnblocks in Iggy castle
+-L3 crushers
+-Swinging Platforms: more than one at once
+-Add few frames of foot pedaling in midair
+-Replicate mario motion after victory sign
+-Transition away from sprite dependancy
+--Reorganize RAM - WIP
+--Redo Speed routines - DONE
+--Add hijack somewhere - DONE
+--Remove ref to inserted sprite - DONE!!!
+-comment hijacks in afterthoughts/simjack
+-Coin game cloud interaction
+-Add global sprite state for "carried by p2", or something equally absurd
