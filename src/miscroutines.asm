@@ -300,21 +300,14 @@ LDA $0DB9
 AND #$18
 CMP #$08
 BEQ KillLuigi
-;LDA #$80
-;STA $1540,x
+
 LDA #$04
 STA $1DF9
 LDA #$18
 TRB $0DB9
 LDA #$08
 TSB $0DB9
-;LDA #$31
-;STA $151C,x
-;LDA #$06
-;STA $1504,x
-;LDA #$02
-;STA $0F42
-;STA $9D
+
 LDA #$D8
 STA $AA,x
 LDA $157C,x

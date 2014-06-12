@@ -151,14 +151,13 @@ BEQ .noflash        ;  |
 RTS                 ;  |
 .noflash            ; /
 
-STZ $0F43
 LDA $0F63
 BIT #$0C
 BEQ ++
 LDA $1504,x
 BEQ +
 -
-LDA $0F42
+LDA $1510,x
 STA $05
 BRA .nocalcframe
 +
@@ -171,7 +170,7 @@ JSR CalcDir
 JSR CalcFrame		;Current Frame should be stored in $05
 .nocalcframe
 LDA $05
-STA $0F42
+STA $1510,x
 LDA $0DB9
 BPL ++
 LDY $05
@@ -180,7 +179,20 @@ STA $05
 ++
 LDY $05
 LDA.w ExtraSet,y
-STA $0F43
+STA $0F42
+LDA #$01
+JSR GetCharacter
+ASL #4
+CLC
+ADC $0F42
+REP #$20
+AND #$00FF
+ASL #6
+CLC
+ADC.w #ExGraphics
+STA $0F42
+SEP #$20
+
 
 ;LDY $05
 LDA FootDynams,y
@@ -763,7 +775,7 @@ RTS
 LDA $151C,x			;\ if there is still time remaining on this frame
 BNE .movesame		;/ reuse last frame
 JSR RunOCSet		;else, figure out how long next frame should be based on speed, store to $151C
-LDA $0F42			;load previous frame
+LDA $1510,x			;load previous frame
 BRA +
 --
 LDA #$00			;goto first walk frame
@@ -789,7 +801,7 @@ STA $05
 .return
 RTS
 .movesame
-LDA $0F42
+LDA $1510,x
 CMP #$06
 BCS --
 STA $05

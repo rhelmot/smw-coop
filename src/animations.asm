@@ -104,13 +104,13 @@ STA $14E0,x
 LDA $151C,x
 BIT #$03
 BNE +
-LDA $0F42
+LDA $1510,x
 INC
 CMP #$03
 BCC .lowset
 LDA #$00
 .lowset
-STA $0F42
+STA $1510,x
 +
 LDA $0F6A
 PHA
@@ -147,8 +147,8 @@ SEP #$20
 STA $D8,x
 XBA
 STA $14D4,x
-LDA #$0A	
-STA $0F42
+LDA #$0A
+STA $1510,x
 LDA $0F6A
 PHA
 ORA #$10
@@ -166,16 +166,16 @@ BNE .statusquo
 BIT #$07
 BNE .setsize
 LDA #$2E
-STA $0F42
+STA $1510,x
 BRA .statusquo
 .setsize
 CMP #$10
 BCC .small
 LDA #$02
-STA $0F42
+STA $1510,x
 BRA .statusquo
 .small
-STZ $0F42
+STZ $1510,x
 .statusquo
 JSR SUB_GFX
 JSR DRAW_BUBBLE
@@ -188,16 +188,16 @@ BNE .statusquo
 BIT #$07
 BEQ .setsize
 LDA #$2E
-STA $0F42
+STA $1510,x
 BRA .statusquo
 .setsize
 CMP #$15
 BCS .small
 LDA #$02
-STA $0F42
+STA $1510,x
 BRA .statusquo
 .small
-STZ $0F42
+STZ $1510,x
 .statusquo
 JSR SUB_GFX
 JSR DRAW_BUBBLE

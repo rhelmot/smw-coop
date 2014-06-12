@@ -38,7 +38,9 @@ STA $010A
 REP #$20
 LDX #$04				; All DMA is on channel 2 - STX $420B sets off
 
-;;  Set up DMA settings for palette writes
+;;
+;Set up DMA settings for palette writes
+;;
 
 LDY #$00				;from bank 0
 STY $4324
@@ -69,10 +71,17 @@ LDA #$000C				;14 bytes of data
 STA $4325
 STX $420B				; Execute DMA
 
+;;
+;Setup for 8x8 DMA
+;;
+
 LDY #$80
 STY $2115                ; Set DMA to handle 16-bit values
 LDA #$1801
 STA $4320
+PHK
+PLY
+STY $4324                ; Bank to DMA from - current code bank
 
 ;;
 ;Mario's 8x8 tiles
@@ -82,9 +91,6 @@ LDA #$60A0
 STA $2116                ; VRAM address
 LDA $0F3A
 STA $4322                ; RAM address to DMA from
-PHK
-PLY
-STY $4324                ; Bank to DMA from - current code bank
 LDA #$0040
 STA $4325                ; Some flag, idk
 STX $420B        ; Execute DMA
@@ -95,30 +101,11 @@ STX $420B        ; Execute DMA
 
 LDA #$61A0                ; VRAM address
 STA $2116
-
-SEP #$30
-LDA #$01
-JSR GetCharacter
-REP #$20
-AND #$0003
-ASL #10
-STA $0E
-LDA $0F43
-AND #$00FF
-ASL #6
-CLC
-ADC $0E
-CLC
-ADC.w #ExGraphics
+LDA $0F42
 STA $4322
-PHK
-PLY
-STY $4324
 LDA #$0040
 STA $4325
-LDY #$04
-STY $420B
-REP #$20
+STX $420B
 
 ;;
 ;Upper halves of Mario's tiles

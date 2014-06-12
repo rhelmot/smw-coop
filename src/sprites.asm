@@ -68,19 +68,19 @@ LSR
 AND #$01
 TAY
 LDA $E4,x
-STA $00                   ; $00 = (Sprite X position + displacement) Low byte 
+STA $00                   ; $00 = (Sprite X position + displacement) Low byte
 LDA $14E0,x
-STA $08                   ; $08 = (Sprite X position + displacement) High byte 
-LDA #$10                  ; $02 = Clipping width 
+STA $08                   ; $08 = (Sprite X position + displacement) High byte
+LDA #$10                  ; $02 = Clipping width
 STA $02
 LDA $D8,x
 SEC
 SBC.w .tentwenty,y
-STA $01                   ; $01 = (Sprite Y position + displacement) Low byte 
+STA $01                   ; $01 = (Sprite Y position + displacement) Low byte
 LDA $14D4,x
 SBC #$00
-STA $09			  ; $09 = (Sprite Y position + displacement) High byte 
-LDA.w .negtentwenty,y                  ; $03 = Clipping height 
+STA $09			  ; $09 = (Sprite Y position + displacement) High byte
+LDA.w .negtentwenty,y                  ; $03 = Clipping height
 STA $03
 JSL $83B72B
 PLX
@@ -93,24 +93,24 @@ db $10,$00
 db $20,$10
 
 GetBrownPlatClip:
-LDA $14B8               
-SEC                       
-SBC #$18                
-STA $04                   
-LDA $14B9               
-SBC #$00                
-STA $0A                   
-LDA #$40                
-STA $06                   
-LDA $14BA               
-SEC                       
-SBC #$0C                
-STA $05                   
-LDA $14BB               
-SBC #$00                
-STA $0B                   
-LDA #$13                
-STA $07                   
+LDA $14B8
+SEC
+SBC #$18
+STA $04
+LDA $14B9
+SBC #$00
+STA $0A
+LDA #$40
+STA $06
+LDA $14BA
+SEC
+SBC #$0C
+STA $05
+LDA $14BB
+SBC #$00
+STA $0B
+LDA #$13
+STA $07
 RTS
 
 GetTurnBrdgClip:
@@ -185,104 +185,104 @@ STA $07
 RTS
 
 RotPlatClip:				;here's hoping this works!
-LDA $151C,X             
-STA $01                   
-LDA $1602,X             
+LDA $151C,X
+STA $01
+LDA $1602,X
 STA $00                   ; $00 = 1602-151C
 PHX
-REP #$30                  ; Index (16 bit) Accum (16 bit) 
-LDA $00                   
-CLC                       
-ADC #$0080              
-AND #$01FF              
+REP #$30                  ; Index (16 bit) Accum (16 bit)
+LDA $00
+CLC
+ADC #$0080
+AND #$01FF
 STA $02                   ; $02 = $00 + #$80 % #$0200
-LDA $00                   
-AND #$00FF              
-ASL                       
-TAX                       
-LDA $07F7DB,X      
-STA $04                   
-LDA $02                   
-AND #$00FF              
-ASL                       
-TAX                       
-LDA $07F7DB,X      
-STA $06                   
-SEP #$30                  ; Index (8 bit) Accum (8 bit) 
-PLX               ; X = Sprite index 
-LDA $04                   
+LDA $00
+AND #$00FF
+ASL
+TAX
+LDA $07F7DB,X
+STA $04
+LDA $02
+AND #$00FF
+ASL
+TAX
+LDA $07F7DB,X
+STA $06
+SEP #$30                  ; Index (8 bit) Accum (8 bit)
+PLX               ; X = Sprite index
+LDA $04
 STA $4202               ; Multiplicand A
-LDA $187B,X             
-LDY $05                   
+LDA $187B,X
+LDY $05
 BNE +
 STA $4203               ; Multplier B
 NOP #8         ; wait for multiplication to complete
 ASL $4216               ; Product/Remainder Result (Low Byte)
 LDA $4217               ; Product/Remainder Result (High Byte)
-ADC #$00                
+ADC #$00
 +
-LSR $01                   
+LSR $01
 BCC +
-EOR #$FF                
-INC A                     
-STA $04                   
+EOR #$FF
+INC A
+STA $04
 +
-LDA $06                   
+LDA $06
 STA $4202               ; Multiplicand A
-LDA $187B,X             
-LDY $07                   
+LDA $187B,X
+LDY $07
 BNE +
 STA $4203               ; Multplier B
 NOP #8         ; wait for multiplication to complete
 ASL $4216               ; Product/Remainder Result (Low Byte)
 LDA $4217               ; Product/Remainder Result (High Byte)
-ADC #$00                
+ADC #$00
 +
-LSR $03                   
+LSR $03
 BCC +
-EOR #$FF                
-INC A                     
+EOR #$FF
+INC A
 +
-STA $06                   
-LDA $E4,X       
-PHA                       
-LDA $14E0,X     
-PHA                       
-LDA $D8,X       
-PHA                       
-LDA $14D4,X     
-PHA                       
-LDY $0F86,X             
-STZ $00                   
-LDA $04                   
+STA $06
+LDA $E4,X
+PHA
+LDA $14E0,X
+PHA
+LDA $D8,X
+PHA
+LDA $14D4,X
+PHA
+LDY $0F86,X
+STZ $00
+LDA $04
 BPL +
-DEC $00                   
+DEC $00
 +
-CLC                       
-ADC $E4,X       
-STA $E4,X       
-; PHP                       
-; PHA                       
-; SEC                       
-; SBC $1534,X             
-; STA $1528,X             
-; PLA                       
-; STA $1534,X             
-; PLP                       
-LDA $14E0,X     
-ADC $00                   
-STA $14E0,X     
-STZ $01                   
-LDA $06                   
+CLC
+ADC $E4,X
+STA $E4,X
+; PHP
+; PHA
+; SEC
+; SBC $1534,X
+; STA $1528,X
+; PLA
+; STA $1534,X
+; PLP
+LDA $14E0,X
+ADC $00
+STA $14E0,X
+STZ $01
+LDA $06
 BPL +
-DEC $01                   
+DEC $01
 +
-CLC                       
-ADC $D8,X       
-STA $D8,X       
-LDA $14D4,X     
-ADC $01                   
-STA $14D4,X     
+CLC
+ADC $D8,X
+STA $D8,X
+LDA $14D4,X
+ADC $01
+STA $14D4,X
 JSR MovingPlatClip
 PLA
 STA $14D4,x
@@ -347,7 +347,7 @@ DW Sprite1B
 DW Sprite1C
 DW Sprite41
 DW Sprite1E
-DW Sprite1F 
+DW Sprite1F
 DW Sprite4F
 DW Sprite21
 DW Sprite22
@@ -363,7 +363,7 @@ DW Sprite2B
 DW Sprite2C
 DW Sprite2D
 DW Sprite4F
-DW Sprite2F 
+DW Sprite2F
 DW Sprite30
 DW Sprite31
 DW Sprite32
@@ -379,7 +379,7 @@ DW Sprite4F
 DW Sprite4F
 DW Sprite4F
 DW Sprite3E
-DW Sprite3F 
+DW Sprite3F
 DW Sprite40
 DW Sprite41
 DW Sprite42
@@ -395,7 +395,7 @@ DW Sprite4B
 DW Sprite4C
 DW Sprite4D
 DW Sprite4E
-DW Sprite4F 
+DW Sprite4F
 DW Sprite4F
 DW Sprite51
 DW Sprite52
@@ -411,7 +411,7 @@ DW Sprite5B
 DW Sprite5C
 DW Sprite5D
 DW Sprite5E
-DW Sprite5F 
+DW Sprite5F
 DW Sprite60
 DW Sprite61
 DW Sprite62
@@ -427,7 +427,7 @@ DW Sprite6B
 DW Sprite6C
 DW Sprite6D
 DW Sprite6E
-DW Sprite6F 
+DW Sprite6F
 DW Sprite4F
 DW Sprite71
 DW Sprite72
@@ -459,7 +459,7 @@ DW Sprite8B
 DW Sprite8C
 DW Sprite8D
 DW Sprite8E
-DW Sprite8F 
+DW Sprite8F
 DW Sprite90
 DW Sprite91
 DW Sprite91
@@ -475,7 +475,7 @@ DW Sprite9B
 DW Sprite9C
 DW Sprite9D
 DW Sprite4F
-DW Sprite9F 
+DW Sprite9F
 DW SpriteA0
 DW SpriteA1
 DW SpriteA2
@@ -491,7 +491,7 @@ DW SpriteAB
 DW SpriteAC
 DW SpriteAD
 DW SpriteAE
-DW SpriteAF 
+DW SpriteAF
 DW SpriteB0
 DW SpriteB1
 DW Sprite4F
@@ -507,7 +507,7 @@ DW SpriteBB
 DW SpriteBC
 DW Sprite00
 DW Sprite23
-DW SpriteBF 
+DW SpriteBF
 DW SpriteC0
 DW SpriteC1
 DW Sprite4F
@@ -595,56 +595,56 @@ BPL GKoopaGo		;/if none, return
 JMP Labelname7
 RTS
 GKoopaGo:
-LDA #$08                ; \ Sprite status = Normal 
-STA $14C8,Y             ; / 
+LDA #$08                ; \ Sprite status = Normal
+STA $14C8,Y             ; /
 PHX
-LDA $9E,X       	; \ Store sprite number for shelless koopa 
-TAX                     ;  | 
-LDA $01961C,X 		;  | 
-STA $009E,Y     	; / 
-TYX                     ; \ Reset sprite tables 
-JSL $07F7D2    		;  | 
-PLX	                ; / 
-LDA $E4,X       	; \ Shelless Koopa position = Koopa position 
-STA $00E4,Y     	;  | 
-LDA $14E0,X     	;  | 
-STA $14E0,Y     	;  | 
-LDA $D8,X       	;  | 
-STA $00D8,Y     	;  | 
-LDA $14D4,X     	;  | 
-STA $14D4,Y     	; / 
-LDA #$00                ; \ Direction = 0 
-STA $157C,Y     	; / 
-LDA #$10                
-STA $1564,Y             
+LDA $9E,X       	; \ Store sprite number for shelless koopa
+TAX                     ;  |
+LDA $01961C,X 		;  |
+STA $009E,Y     	; /
+TYX                     ; \ Reset sprite tables
+JSL $07F7D2    		;  |
+PLX	                ; /
+LDA $E4,X       	; \ Shelless Koopa position = Koopa position
+STA $00E4,Y     	;  |
+LDA $14E0,X     	;  |
+STA $14E0,Y     	;  |
+LDA $D8,X       	;  |
+STA $00D8,Y     	;  |
+LDA $14D4,X     	;  |
+STA $14D4,Y     	; /
+LDA #$00                ; \ Direction = 0
+STA $157C,Y     	; /
+LDA #$10
+STA $1564,Y
 STA $154C,Y
-LDA $164A,X             
-STA $164A,Y             
+LDA $164A,X
+STA $164A,Y
 STZ $1540,X
 PHX
-PHY                       
+PHY
 JSR ADDR_02D4FA         ; \ Find sprite's position relative to mario
 TYX
 LDA $0197AD,x       ;  |Load speed based on that
 STY $00                   ; / Store index to scratch
-PLY                       
+PLY
 PLX
 STA $00B6,Y  ;   set speed
 LDA $00                   ; \
-EOR #$01                ;  | 
+EOR #$01                ;  |
 STA $157C,Y     ;  |set direction
 STA $01                   ; / and set to scratch
 LDA #$10                ; \ disable interaction for ten frames
-STA $1528,Y  ; /     
-LDA $9E,X       ; \ If Yellow Koopa... 
-CMP #$07                ;  | 
-BNE Labelname7          ;  | 
+STA $1528,Y  ; /
+LDA $9E,X       ; \ If Yellow Koopa...
+CMP #$07                ;  |
+BNE Labelname7          ;  |
 LDY #$08                ;  | ...find free sprite slot...
-MCLoop: 
-LDA $14C8,Y             ;  | 
-BEQ SpawnMovingCoin       ;  | ...and spawn moving coin 
-DEY                       ;  | 
-BPL MCLoop           ; / 
+MCLoop:
+LDA $14C8,Y             ;  |
+BEQ SpawnMovingCoin       ;  | ...and spawn moving coin
+DEY                       ;  |
+BPL MCLoop           ; /
 Labelname7:
 TXY
 LDX $15E9
@@ -656,28 +656,28 @@ JSR BounceSquash
 RTS
 
 SpawnMovingCoin:
-LDA #$08                ; \ Sprite status = normal 
-STA $14C8,Y             ; / 
-LDA #$21                ; \ Sprite = Moving Coin 
-STA $009E,Y     ; / 
-LDA $E4,X       ; \ Copy X position to coin 
-STA $00E4,Y     ;  | 
-LDA $14E0,X     ;  | 
-STA $14E0,Y     ; / 
-LDA $D8,X       ; \ Copy Y position to coin 
-STA $00D8,Y     ;  | 
-LDA $14D4,X     ;  | 
-STA $14D4,Y     ; / 
-PHX                       ; \ 
-TYX                       ;  | 
-JSL $07F7D2    ;  | Clear all sprite tables, and load new values 
-PLX                       ; / 
-LDA #$D0                ; \ Set Y speed 
-STA $00AA,Y  ; / 
-LDA $01                   ; \ Set direction 
-STA $157C,Y     ; / 
-LDA #$20                
-STA $154C,Y  
+LDA #$08                ; \ Sprite status = normal
+STA $14C8,Y             ; /
+LDA #$21                ; \ Sprite = Moving Coin
+STA $009E,Y     ; /
+LDA $E4,X       ; \ Copy X position to coin
+STA $00E4,Y     ;  |
+LDA $14E0,X     ;  |
+STA $14E0,Y     ; /
+LDA $D8,X       ; \ Copy Y position to coin
+STA $00D8,Y     ;  |
+LDA $14D4,X     ;  |
+STA $14D4,Y     ; /
+PHX                       ; \
+TYX                       ;  |
+JSL $07F7D2    ;  | Clear all sprite tables, and load new values
+PLX                       ; /
+LDA #$D0                ; \ Set Y speed
+STA $00AA,Y  ; /
+LDA $01                   ; \ Set direction
+STA $157C,Y     ; /
+LDA #$20
+STA $154C,Y
 BRA Labelname7
 
 SpinKillGreenKoopa:
@@ -1180,7 +1180,7 @@ LDA $14D4,x
 ADC #$00
 STA $03
 LDA #$10		;small height
-STA $0A			
+STA $0A
 LDA $0DB9
 BIT #$18
 BEQ +
@@ -1727,7 +1727,7 @@ LDA #$31
 STA $151C,x
 LDA #$07
 STA $1504,x
-STZ $0F42
+STZ $1510,x
 STA $9D
 RTS
 MushReturn:
@@ -1856,14 +1856,14 @@ RTS
 
 Sprite81:		;changing item
 SEP #$10
-LDA $187B,y               ; \ Determine which power-up to act like 
-LSR                       ;  | 
-LSR                       ;  | 
-LSR                       ;  | 
-LSR                       ;  | 
-LSR                       ;  | 
-LSR                       ;  | 
-AND #$03                  ;  | 
+LDA $187B,y               ; \ Determine which power-up to act like
+LSR                       ;  |
+LSR                       ;  |
+LSR                       ;  |
+LSR                       ;  |
+LSR                       ;  |
+LSR                       ;  |
+AND #$03                  ;  |
 ASL			  ;  |
 TAX                       ;  |
 JMP (ChangingItem,x)	  ; /
@@ -2024,16 +2024,16 @@ CMP #$03		;\if three, kill
 BEQ KillChuck		;/
 
 LDA #$28                ;\ Play sound effect ;From chuck dissasembly
-STA $1DFC               ;/ 
-LDA #$03                
-STA $00C2,y		
+STA $1DFC               ;/
+LDA #$03
+STA $00C2,y
 STA $1540,y
-LDA #$00		
-STA $1570,y		
+LDA #$00
+STA $1570,y
 PHY
-JSR ADDR_02D4FA         
-LDA ChuckBounceXsp,Y    
-PLY   
+JSR ADDR_02D4FA
+LDA ChuckBounceXsp,Y
+PLY
 STA $00B6,x
 RTS
 
@@ -2052,17 +2052,17 @@ RTS
 ChuckBounceXsp:
 db $20,$E0
 
-ADDR_02D4FA:       
-LDA $E4,x                   
-SEC                       
-SBC $00E4,y                 
+ADDR_02D4FA:
+LDA $E4,x
+SEC
+SBC $00E4,y
 STA $0F                   ;return sprite's xpos reletive to mario
-LDA $14E0,x                   
-SBC $14E0,y        
+LDA $14E0,x
+SBC $14E0,y
 PHP
 LDY #$00
-PLP     
-BPL Return02D50B          
+PLP
+BPL Return02D50B
 INY                       ;return y as 1 if player on left of enemy
 Return02D50B:
 RTS
@@ -2161,9 +2161,9 @@ STA $1558,y
 RexEnd:
 RTS
 SmushRex:
-LDA #$0C                ; \ Time to show semi-squashed Rex = $0C 
-STA $1FE2,y             ; /	
-LDA #$00				     
+LDA #$0C                ; \ Time to show semi-squashed Rex = $0C
+STA $1FE2,y             ; /
+LDA #$00
 STA $1662,y  		; Change clipping area for squashed Rex
 LDA #$08
 JSR BounceSquash

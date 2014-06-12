@@ -12,8 +12,6 @@ List A: RAM Map
 0F3A  :  Address from which to upload Mario's 8x8 tiles (16-bit)
 0F3C  :  Address from which to upload Mario's head tile (16-bit)
 0F3E  :  Address from which to upload Mario's foot tile (16-bit)
-0F42  :  Luigi's frame, translated into CMC frames
-0F43  :  Luigi's current extra thing set
 0F42  :  Address from which to upload Luigi's 8x8 tiles (16-bit)
 0F44  :  Address from which to upload Luigi's head tile (16-bit)
 0F46  :  Address from which to upload Luigi's foot tile (16-bit)
@@ -99,7 +97,7 @@ List B: Animations ($1504,x + $151C,x)
 0A - Get Cape
 
 
-List C: Graphical frames ($0F3A/$0F42)
+List C: Graphical frames ($0F3A/$1510,x)
 00 - Standing
 01 - Walk 1
 02 - Walk 2
@@ -144,7 +142,7 @@ List D: TODOs
 -regular doors only entered at certain points
 -Finish slope interaction
 -Fix running through slopes... is this even possible? OF COURSE IT IS!
--Transition frame address from 1510,x to 0F42 - DONE
+-Transition frame address from 1510,x to 0F42 - DONE - UNDONE
 -Restore hijacks from DSX.asm; transfer all DMA code to the extiles hijack. - DONE
 -Fix frame of layer priority issues for pipes - DONE
 -Fix images walking in pipes - DONE
