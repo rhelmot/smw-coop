@@ -1,6 +1,3 @@
-CharOffsets:				;Starting tiles for players pre-dma
-db $00,$30,$60
-
 NameOffsets:				;Where each player starts in the next table
 db $00,$05,$0A
 CharNames:					;BLOOM, SCOOT, BELLE

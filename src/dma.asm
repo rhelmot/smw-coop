@@ -75,37 +75,25 @@ LDA #$1801
 STA $4320
 
 ;;
-;Mario's 8x8 tiles - changed!
+;Mario's 8x8 tiles
 ;;
 
 LDA #$60A0
-STA $2116
-
-SEP #$30
-LDA #$00
-JSR GetCharacter
-REP #$20
-AND #$0003
-ASL #10
-STA $0E
-LDA $0F3B
-AND #$00FF
-ASL #6
-CLC
-ADC $0E
-CLC
-ADC.w #ExGraphics
-STA $4322
+STA $2116                ; VRAM address
+LDA $0F3A
+STA $4322                ; RAM address to DMA from
 PHK
 PLY
-STY $4324
+STY $4324                ; Bank to DMA from - current code bank
 LDA #$0040
-STA $4325
-LDY #$04
-STY $420B
+STA $4325                ; Some flag, idk
+STX $420B        ; Execute DMA
 
-REP #$20		;Luigi's 8x8 tiles
-LDA #$61A0
+;;
+;Luigi's 8x8 tiles
+;;
+
+LDA #$61A0                ; VRAM address
 STA $2116
 
 SEP #$30

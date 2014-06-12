@@ -1,35 +1,134 @@
-    HeadDynams:										;which graphical tile corresponds to which pose for the head
+HeadDynams:										;which graphical tile corresponds to which pose for the head
 db $00,$00,$00,$00,$00,$00,$00,$00
 db $00,$0B,$0C,$0D,$25,$01,$0E,$0F
 db $20,$10,$12,$00,$11,$1E,$00,$01
 db $22,$22,$22,$22,$22,$22,$22
+
 FootDynams:										;which graphical tile corresponds to whichpose for the foot
 db $09,$03,$02,$07,$0A,$08,$04,$06
 db $05,$13,$14,$15,$1B,$09,$16,$17
 db $21,$18,$1A,$1C,$19,$1F,$1D,$04
 db $23,$24,$26,$27,$28,$29,$2A
+
 CarryCorrections:								;which pose corresponds to the proper pose for carrying something
 db $06,$07,$08,$06,$07,$08,$06,$07
 db $08,$07,$0A,$0B,$17,$12,$0A,$0F
 db $10,$11,$12,$13,$07,$15,$16,$17
 db $18,$07,$1D,$1E,$18,$1D,$1E
-MarioCorrections:								;which pose each mario ($13E0) pose corresponds to
+
+MarioCorrections:								;which cmc pose each mario ($13E0) pose corresponds to
 db $00,$02,$01,$0D,$03,$04,$05,$06,$08,$07,$17,$09,$19,$0E,$13,$0A
 db $FF,$FF,$FF,$FF,$FF,$10,$1C,$18,$1A,$1D,$1B,$1E,$16,$12,$FF,$FF
 db $FF,$FF,$FF,$FF,$14,$0B,$11,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$0C,$FF,$15,$0F
 db $FF,$FF,$FF,$FF,$0B,$0A,$00
+
 ExtraSet:										;which set of 8x8 tiles corresponds to each pose
 db $00,$00,$00,$04,$04,$04,$00,$00
 db $00,$00,$01,$01,$05,$02,$00,$00
 db $01,$01,$00,$06,$07,$0F,$03,$02
 db $08,$08,$0A,$0B,$08,$0C,$09
-TopY:	;all $05, except pose 12 (that's $0C)	;y offset for the top 8x8 tile for each pose
+
+TopY:	                                        ;y offset for the top 8x8 tile for each pose
+db $05,$05,$05,$05,$05,$05,$05,$05
+db $05,$05,$05,$05,$05,$05,$05,$05
+db $05,$05,$0C,$05,$05,$05,$05,$05
+db $05,$05,$05,$05,$05,$05,$05
 BotY:											;y offset fot the bottom 8x8 tile for each pose
 db $14,$13,$13,$0F,$0F,$0F,$13,$14
 db $13,$15,$17,$17,$17,$14,$13,$13
 db $16,$16,$16,$15,$0D,$05,$0E,$13
 db $16,$16,$13,$16,$15,$16,$17
+
+CharOffsets:				;Starting tiles for players pre-dma
+db $00,$30,$60
+
+TileToAddr:
+    REP #$20	;16bit A
+    PHA
+    AND #$0007
+    ASL #6		;each 16x8 tile is $40 bytes, so multiply low 3 bits by #$40 or 2^6
+    STA $06		;store to scratch
+    PLA
+    AND #$00F8
+    ASL #7		;each line of 16x16 tiles is $400 bytes, so multiply top 5 bits by $400/8 or 2^7 (b/c they're already multiplied by 8)
+    CLC
+    ADC #$2000	;use the graphics for regular mario, decompressed at $7E2000
+    CLC
+    ADC $06		;add frame offset
+    RTS
+
+
+                                ;Mario New Graphics
+MarioNewGraphics:
+    LDA #$00
+    JSR GetCharacter
+    PHA
+    TAY
+    LDA.w CharOffsets,y
+    STA $0F
+    LDY $13E0
+    LDA $0F63
+    BIT #$03
+    BNE +
+    LDA $0100
+    CMP #$07
+    BEQ +
+    LDY #$3E                    ; If mario is dead and we're not on the title screen, use the "dead" frame (probably)
+    +
+    LDA.w MarioCorrections,y
+    TAY
+
+    LDA.w ExtraSet,y
+    STA $0F3A
+    PLA                          ; Get current character
+    ASL #4                       ; Multiply by 10
+    CLC
+    ADC $0F3A                    ; Add to current 8x8 set -- get current 8x8 set independent of character
+    REP #$20
+    AND #$00FF
+    ASL #6                       ; 4 bits per pixel, 64 pixels per tile, 8 bits per byte, two tiles per 8x8 set ==> x40 bytes (2^6) per 8x8 set
+    CLC
+    ADC.w #ExGraphics
+    STA $0F3A
+    SEP #$20
+
+    LDA.w HeadDynams,y            ; \
+    CLC                           ;  |
+    ADC $0F                       ;  |
+    JSR TileToAddr                ;  |
+    STA $0F3C                     ;  |
+    SEP #$20                      ;  |
+    LDA.w FootDynams,y            ;  | Set addresses to DMA tiles from
+    CLC                           ;  |
+    ADC $0F                       ;  |
+    JSR TileToAddr                ;  |
+    STA $0F3E                     ;  |
+    SEP #$20                      ; /
+
+    LDA.w TopY,y                ; \
+    CLC                         ;  |
+    ADC $80                     ;  |
+    INC                         ;  |
+    STA $0319                   ;  | Set Y positions for 8x8 tiles in OAM
+    LDA.w BotY,y                ;  |
+    CLC                         ;  |
+    ADC $80                     ;  |
+    INC                         ;  |
+    STA $031D                   ; /
+
+    LDA $0311
+    CMP $0315
+    BNE +
+    CMP #$F0
+    BNE +
+    STA $0319
+    STA $031D
+    +
+    LDA #$04
+    TSB $0323
+    TSB $030B		;???
+    RTS
 
 SUB_GFX:										;GRAPHICS
 
@@ -418,20 +517,7 @@ GETSLOT:		;Y=0: foot Y=1: head
 	SEP #$20
 	RTS
 
-TileToAddr:
-	REP #$20	;16bit A
-	PHA
-	AND #$0007
-	ASL #6		;each 16x8 tile is $40 bytes, so multiply low 3 bits by #$40 or 2^6
-	STA $06		;store to scratch
-	PLA
-	AND #$00F8
-	ASL #7		;each line of 16x16 tiles is $400 bytes, so multiply top 5 bits by $400/8 or 2^7 (b/c they're already multiplied by 8)
-	CLC
-	ADC #$2000	;use the graphics for regular mario, decompressed at $7E2000
-	CLC
-	ADC $06		;add frame offset
-RTS
+
 
 
 ;;;;;;;;;

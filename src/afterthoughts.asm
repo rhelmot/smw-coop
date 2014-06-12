@@ -504,7 +504,7 @@ JML $80D0DD
 .notgameover
 JML $80D0E6
 
-LuigiOWLives:
+LuigiOWLives:				; Stripe Image Bullshit
 LDA $7F837B
 TAX
 REP #$20

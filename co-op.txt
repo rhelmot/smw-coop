@@ -9,12 +9,12 @@ List A: RAM Map
 0DB5  :  P2 lives
 0DB9  :  CDUPPWDS flags. Carrying, Debug, looking Up, Powerup, in Water, Ducking, Spinjumping
 
-0F3A  :  Mario's frame, translated into CMC frames
-0F3B  :  Mario's current extra thing set
+0F3A  :  Address from which to upload Mario's 8x8 tiles (16-bit)
 0F3C  :  Address from which to upload Mario's head tile (16-bit)
 0F3E  :  Address from which to upload Mario's foot tile (16-bit)
 0F42  :  Luigi's frame, translated into CMC frames
 0F43  :  Luigi's current extra thing set
+0F42  :  Address from which to upload Luigi's 8x8 tiles (16-bit)
 0F44  :  Address from which to upload Luigi's head tile (16-bit)
 0F46  :  Address from which to upload Luigi's foot tile (16-bit)
 
@@ -41,7 +41,7 @@ List A: RAM Map
 142C-142F: various scratch
 
 1504,x:  Current animation. See List A. Set high bit to teleport afterwards.
-1510,x:  unused
+1510,x:  Current frame, $13E0 values
 151C,x:  Animation Timer. Like $1496
 1528,x:  Will always be #$75. Used to identify sprite.
 1534,x:  Cape image. Like $13DF
