@@ -43,6 +43,10 @@ db $16,$16,$13,$16,$15,$16,$17
 CharOffsets:				;Starting tiles for players pre-dma
 db $00,$30,$60
 
+CapeAddresses:
+dw $7400,$7440,$7480,$74C0,$7500,$7540,$7580,$75C0
+dw $7800,$7840,$7880,$78C0,$7900,$7940,$7980,$79C0
+
 TileToAddr:
     REP #$20	;16bit A
     PHA

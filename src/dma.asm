@@ -59,6 +59,9 @@ LDA #$000C				;14 bytes of data
 STA $4325
 STX $420B				; Execute DMA
 
+LDY $0DB2
+BEQ .skip1
+
 ;;
 ;Luigi's Palette
 ;;
@@ -74,6 +77,8 @@ STX $420B				; Execute DMA
 ;;
 ;Setup for 8x8 DMA
 ;;
+
+.skip1
 
 LDY #$80
 STY $2115                ; Set DMA to handle 16-bit values
@@ -95,6 +100,9 @@ LDA #$0040
 STA $4325                ; Some flag, idk
 STX $420B        ; Execute DMA
 
+LDY $0DB2
+BEQ .skip2
+
 ;;
 ;Luigi's 8x8 tiles
 ;;
@@ -106,6 +114,8 @@ STA $4322
 LDA #$0040
 STA $4325
 STX $420B
+
+.skip2
 
 ;;
 ;Upper halves of Mario's tiles
@@ -149,6 +159,9 @@ INX #2
 CPX $0D84
 BCC .loop2
 
+LDY $0DB2
+BEQ .skip3
+
 ;;
 ;Upper halves of Luigi's tiles
 ;;
@@ -191,66 +204,68 @@ INX #2
 CPX #$04
 BCC .loop4
 
-SEP #$20
-LDA $19
-CMP #$02
+.skip3
+
+;;
+;Mario's cape tile
+;;
+
+LDY $19
+CPY #$02
 BNE .nocapemario
-REP #$20
+
 LDA #$6040
 STA $2116
 LDA $13DF
 AND #$000F
-ASL #6
-CLC
-ADC #$7400
-LDY $13DF
-CPY #$08
-BCC +
-CLC
-ADC #$0200
-+
+ASL
+TAY
+LDA.w CapeAddresses,y
 STA $4322
-PHA
+PHA                      ; Save cape address
 LDY #$7E
 STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
-STY $420B
+STY $420B                ; Execute DMA 1 - top row
+
 LDA #$6140
 STA $2116
-PLA
+PLA                      ; Recover cape address
 CLC
-ADC #$0200
+ADC #$0200               ; Advance to next 8x8 line
 STA $4322
 LDY #$7E
 STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
-STY $420B
-SEP #$20
+STY $420B                ; Execute DMA 2 - bottom row
+
 .nocapemario
 
+;;
+;Luigi's cape tile
+;;
+
+SEP #$20
+LDA $0DB2
+BEQ .nocapeluigi
 LDA $0DB9
 AND #$18
 CMP #$10
 BNE .nocapeluigi
+
 LDX $0F65
 REP #$20
 LDA #$6060
 STA $2116
 LDA $1534,x
 AND #$000F
-ASL #6
-CLC
-ADC #$7400
-LDY $1534,x
-CPY #$08
-BCC +
-CLC
-ADC #$0200
-+
+ASL
+TAY
+LDA.w CapeAddresses,y
 STA $4322
 PHA
 LDY #$7E
@@ -258,7 +273,7 @@ STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
-STY $420B
+STY $420B                ; Execute DMA 1 - Top row
 
 LDA #$6160
 STA $2116
@@ -271,8 +286,8 @@ STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
-STY $420B
-SEP #$20
+STY $420B                ; Execute DMA 2 - Bottom row
+
 .nocapeluigi
 
 DoNone:
