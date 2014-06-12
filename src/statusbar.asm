@@ -1,4 +1,4 @@
-org $008C81     ;status bar tilemap                
+org $008C81     ;status bar tilemap
 db $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC	;That's the four tiles for the top of the item box
 
 db $FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C		;Mario
@@ -19,10 +19,10 @@ db $FC,$38,$05,$38,$FC,$3C,$FC,$3C	;/but the last two bytes are not
 db $FC,$3C,$FC,$3C,$FC,$3C		;bottom 4 tiles of the item box
 
 org $008E72
-STA $0F20               ;  | 
+STA $0F20               ;  |
 LDA $0F32               ;  |shift time five to the left
-STA $0F21               ;  | 
-LDA $0F33               ;  | 
+STA $0F21               ;  |
+LDA $0F33               ;  |
 STA $0F22
 
 org $008F7E
@@ -45,7 +45,7 @@ JMP $8F73		; Kill bonus stars
 
 org $008F86
 LDA #$00
-JSL GetCharLong
+JSL GetCharacterLong
 TAX
 LDA.l NameOffsets,x
 TAX
@@ -68,7 +68,7 @@ TwoPlayerDraw:
 LDA #$26
 STA $0F2C
 LDA #$01
-JSL GetCharLong
+JSL GetCharacterLong
 TAX
 LDA.l NameOffsets,x
 TAX

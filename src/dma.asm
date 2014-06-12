@@ -7,7 +7,7 @@ BEQ ContinUpload
 OWUploadJmp:
 JMP OWUpload
 
-BEGINDMA:	
+BEGINDMA:
 SEP #$20
 LDA $0100
 CMP #$0E
@@ -36,9 +36,14 @@ CMP #$03
 BCS -
 STA $010A
 REP #$20
-LDX #$04
-LDY $0D84
-;BEQ CODE_00A328
+LDX #$04				; All DMA is on channel 2 - STX $420B sets off
+
+;;  Set up DMA settings for palette writes
+
+LDY #$00				;from bank 0
+STY $4324
+LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
+STA $4320				;DMA channel #2 - $432x
 
 ;;
 ;Mario's Palette
@@ -46,25 +51,11 @@ LDY $0D84
 
 LDY #$8A				;CGRAM write address  - start writing at palette 8 color 6 (mario's stuff)
 STY $2121
-LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
-STA $4320				;DMA channel #2 - $432x
-SEP #$20
-LDA #$00
-JSR GetChar
-ASL
-PHX
-TAX
-REP #$20
-LDA $00E2AA,x
-PLX
-CLC
-ADC #$0008
+JSR GetPaletteP1
 STA $4322				;DMA read address
-LDY #$00				;from bank 0
-STY $4324
 LDA #$000C				;14 bytes of data
 STA $4325
-STX $420B
+STX $420B				; Execute DMA
 
 ;;
 ;Luigi's Palette
@@ -72,135 +63,16 @@ STX $420B
 
 LDY #$9A				;CGRAM write address  - start writing at palette 8 color 6 (mario's stuff)
 STY $2121
-LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
-STA $4320				;DMA channel #2 - $432x
-SEP #$20
-LDA #$01
-JSR GetChar
-ASL
-PHX
-TAX
-REP #$20
-LDA $00E2AA,x
-PLX
-CLC
-ADC #$0008
+JSR GetPaletteP2
 STA $4322				;DMA read address
-LDY #$00				;from bank 0
-STY $4324
 LDA #$000C				;14 bytes of data
 STA $4325
-STX $420B
-
-SEP #$20
-LDA $0F63
-BIT #$0C
-BEQ +
-LDA #$48
-STA $00
-STZ $01
-LDY $0F65
-LDA $1504,y
-CMP #$08
-BEQ .slowflash
-LDA $1570,y
-BNE .fastflash
-LDA $0DB9
-AND #$18
-CMP #$18
-BNE +
-BRA .regcol
-.slowflash
-LDA $13
-LSR #2
-STA $00
-BRA .regcol
-.fastflash
-LDA $14
-AND #$3F
-STA $00
-.regcol
-REP #$20
-LDY #$9A
-STY $2121
-LDA #$2200
-STA $4320
-LDA #$B2C8
-CLC
-ADC $00
-STA $4322
-LDY #$00
-STY $4324
-LDA #$0008
-STA $4325
-STX $420B
-+
-
-SEP #$20
-LDA $0F63
-BIT #$03
-BEQ +
-LDA #$48
-STA $00
-STZ $01
-LDA $71
-CMP #$04
-BEQ .slowflashm
-LDA $1490
-BNE .fastflashm
-LDA $19
-CMP #$03
-BNE +
-BRA .regcolm
-.slowflashm
-LDA $13
-LSR #2
-STA $00
-BRA .regcolm
-.fastflashm
-LDA $14
-AND #$3F
-STA $00
-.regcolm
-REP #$20
-LDY #$8A
-STY $2121
-LDA #$2200
-STA $4320
-LDA #$B2C8
-CLC
-ADC $00
-STA $4322
-LDY #$00
-STY $4324
-LDA #$0008
-STA $4325
-STX $420B
-+
-REP #$20
-CODE_00A328:
+STX $420B				; Execute DMA
 
 LDY #$80
-STY $2115
+STY $2115                ; Set DMA to handle 16-bit values
 LDA #$1801
 STA $4320
-
-
-
-
-;;
-;Random Cape Tile - Unnecissary; no flight
-;;
-
-; LDA #$67F0
-; STA $2116
-; LDA $0D99
-; STA $4322
-; LDY #$7E
-; STY $4324
-; LDA #$0020
-; STA $4325
-; STX $420B
 
 ;;
 ;Mario's 8x8 tiles - changed!
@@ -211,7 +83,7 @@ STA $2116
 
 SEP #$30
 LDA #$00
-JSR GetChar
+JSR GetCharacter
 REP #$20
 AND #$0003
 ASL #10
@@ -238,7 +110,7 @@ STA $2116
 
 SEP #$30
 LDA #$01
-JSR GetChar
+JSR GetCharacter
 REP #$20
 AND #$0003
 ASL #10
@@ -454,7 +326,7 @@ LDY #$57
 STY $2122
 
 LDA #$00
-JSR GetChar
+JSR GetCharacter
 TAX
 LDA.l OWPindex,x
 REP #$20
@@ -476,7 +348,7 @@ STY $420B
 
 SEP #$20
 LDA #$01
-JSR GetChar
+JSR GetCharacter
 TAX
 LDA.l OWPindex,x
 REP #$20
@@ -517,7 +389,7 @@ LDA #$1801				;$2118 - 2 regs 1 write
 STA $4320
 SEP #$20
 LDA #$00
-JSR GetChar
+JSR GetCharacter
 ASL #3
 CLC
 ADC $00
@@ -537,7 +409,7 @@ LDA #$0040
 STA $4325
 SEP #$20
 LDA #$01
-JSR GetChar
+JSR GetCharacter
 ASL #3
 CLC
 ADC $00
@@ -582,7 +454,7 @@ LDA $01
 BNE +
 SEP #$20
 LDA #$00
-JSR GetChar
+JSR GetCharacter
 ASL #8
 CLC
 ADC $00
@@ -604,7 +476,7 @@ LDA $01
 BNE +
 SEP #$20
 LDA #$01
-JSR GetChar
+JSR GetCharacter
 ASL #8
 CLC
 ADC $00

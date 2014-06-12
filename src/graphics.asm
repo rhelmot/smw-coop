@@ -1,4 +1,4 @@
-HeadDynams:										;which graphical tile corresponds to which pose for the head
+    HeadDynams:										;which graphical tile corresponds to which pose for the head
 db $00,$00,$00,$00,$00,$00,$00,$00
 db $00,$0B,$0C,$0D,$25,$01,$0E,$0F
 db $20,$10,$12,$00,$11,$1E,$00,$01
@@ -327,7 +327,7 @@ RTS
 ;
 ;		Y = index to sprite OAM ($300)
 ;		$00 = sprite x position relative to screen boarder
-;		$01 = sprite y position relative to screen boarder  
+;		$01 = sprite y position relative to screen boarder
 ;
 ; It is adapted from the subroutine at $03B760
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -356,22 +356,22 @@ ON_SCREEN_X:        LDA $14E0,x             ; \
                     SEP #$20                ;  |
                     ROL A                   ;  |
                     AND #$01                ;  |
-                    STA $15C4,x             ; / 
-                    BNE INVALID             ; 
-                    
+                    STA $15C4,x             ; /
+                    BNE INVALID             ;
+
                     LDY #$00                ; \ set up loop:
-                    LDA $1662,x             ;  | 
+                    LDA $1662,x             ;  |
                     AND #$20                ;  | if not smushed (1662 & 0x20), go through loop twice
                     BEQ ON_SCREEN_LOOP      ;  | else, go through loop once
-                    INY                     ; / 
-ON_SCREEN_LOOP:     LDA $D8,x               ; \ 
+                    INY                     ; /
+ON_SCREEN_LOOP:     LDA $D8,x               ; \
                     CLC                     ;  | set vertical offscreen if necessary
                     ADC SPR_T1,y            ;  |
                     PHP                     ;  |
                     CMP $1C                 ;  | (vert screen boundry)
                     ROL $00                 ;  |
                     PLP                     ;  |
-                    LDA $14D4,x             ;  | 
+                    LDA $14D4,x             ;  |
                     ADC #$00                ;  |
                     LSR $00                 ;  |
                     SBC $1D                 ;  |
@@ -383,14 +383,14 @@ ON_SCREEN_Y:        DEY                     ;  |
                     BPL ON_SCREEN_LOOP      ; /
 
                     LDY $15EA,x             ; get offset to sprite OAM
-                    LDA $E4,x               ; \ 
-                    SEC                     ;  | 
+                    LDA $E4,x               ; \
+                    SEC                     ;  |
                     SBC $1A                 ;  | $00 = sprite x position relative to screen boarder
-                    STA $00                 ; / 
-                    LDA $D8,x               ; \ 
-                    SEC                     ;  | 
+                    STA $00                 ; /
+                    LDA $D8,x               ; \
+                    SEC                     ;  |
                     SBC $1C                 ;  | $01 = sprite y position relative to screen boarder
-                    STA $01                 ; / 
+                    STA $01                 ; /
                     RTS                     ; return
 
 INVALID:            PLA
@@ -405,7 +405,7 @@ GETSLOT:		;Y=0: foot Y=1: head
 	ASL
 	PHA
 	LDA #$01
-	JSR GetChar
+	JSR GetCharacter
 	TAY
 	LDA.w CharOffsets,y
 	STA $0F
@@ -417,7 +417,7 @@ GETSLOT:		;Y=0: foot Y=1: head
 	STA $0F44,y
 	SEP #$20
 	RTS
-	
+
 TileToAddr:
 	REP #$20	;16bit A
 	PHA
@@ -827,4 +827,81 @@ STA $151C,x
 LDA $157C,x
 EOR #$01
 STA $157C,x
+RTS
+
+
+;;;;;;;;;;;;;;;
+;;
+;;  Get Pointer to current palette data
+;;  Arguments: which player, in A
+;;
+;;;;;;;;;;;;;;;
+
+GetPaletteP1:
+SEP #$20
+LDA $0F63
+BIT #$03
+BEQ .totesRegular
+LDA $71                    ; Check current animation
+CMP #$04
+BEQ FireFlashPalette
+LDA $1490                    ; Check if has star
+BNE StarFlashPalette
+LDA $19
+CMP #$03                    ; Check if fire
+BNE .totesRegular
+REP #$20
+LDA #$B30C
+RTS
+.totesRegular
+LDA #$00
+JMP UniversalEnd
+
+FireFlashPalette:
+LDA $13
+LSR
+BRA BothFlashPalette
+
+StarFlashPalette:
+LDA $14
+ASL
+
+BothFlashPalette:
+REP #$20
+AND #$001E
+CLC
+ADC #$B2C8
+RTS
+
+GetPaletteP2:
+SEP #$20
+LDA $0F63
+BIT #$0C
+BEQ .totesRegular
+LDY $0F65
+LDA $1504,y                ; Check current animation
+CMP #$08
+BEQ FireFlashPalette
+LDA $1570,y                ; Check if has star
+BNE StarFlashPalette
+LDA $0DB9                    ; Check if fire
+AND #$18
+CMP #$18
+BNE .totesRegular
+REP #$20
+LDA #$B30C
+RTS
+.totesRegular
+LDA #$01
+
+UniversalEnd:
+JSR GetCharacter
+ASL
+PHX
+TAX
+REP #$20
+LDA $00E2AA,x            ; Load from list of pointers to different palettes
+PLX
+CLC
+ADC #$0008
 RTS

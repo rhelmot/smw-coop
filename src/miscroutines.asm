@@ -13,11 +13,11 @@ db $14,$24,$30
 MinusMax:
 db $EC,$DC,$D0
 
-GetCharLong:
-JSR GetChar
+GetCharacterLong:
+JSR GetCharacter
 RTL
 
-GetChar:
+GetCharacter:
 CLC
 ADC $010A
 CMP #$03
@@ -397,7 +397,7 @@ LDA $00D8,y	; |
 STA $00		;/
 LDA $14D4,x	;\get self ypos to scratch
 STA $03
-LDA $D8,x	; 
+LDA $D8,x	;
 STA $02
 PLA
 BNE casebottom
@@ -428,7 +428,7 @@ LDA #$00
 RTS
 onbottom:
 LDA #$01
-RTS	
+RTS
 
 ;;;;;;;;;
 ;

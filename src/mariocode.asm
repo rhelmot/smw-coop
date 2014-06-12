@@ -155,7 +155,7 @@ BMI ++				;if speed to push is negetive, goto neg. routine
 LDA $7B
 BMI .fourplusx			;if current speed is negetive, (STP is positive), just set the speed
 LDA.w BSpeedTable,y
-CMP $7B			
+CMP $7B
 BCC +				;if STP is less than CS, just decrement the CS
 STA $7B			;otherwise, just use the STP
 BRA +++
@@ -169,7 +169,7 @@ BRA +++
 ++
 LDA $7B
 BPL .fourminusx			;if current speed is positive, (STP is negetive), just set the speed
-LDA.w BSpeedTable,y	
+LDA.w BSpeedTable,y
 CMP $7B
 BCS +				;if STP is greater than CS, just increment the CS
 STA $7B			;otherwise, just use the STP
@@ -239,7 +239,7 @@ BMI ++				;if speed to push is negetive, goto neg. routine
 LDA $0F67
 BMI .fourplusy			;if current speed is negetive, (STP is positive), just set the speed
 LDA.w BSpeedTable,y
-CMP $0F67			
+CMP $0F67
 BCC +				;if STP is less than CS, just decrement the CS
 STA $0F67			;otherwise, just use the STP
 BRA +++
@@ -253,7 +253,7 @@ BRA +++
 ++
 LDA $0F67
 BPL .fourminusy			;if current speed is positive, (STP is negetive), just set the speed
-LDA.w BSpeedTable,y	
+LDA.w BSpeedTable,y
 CMP $0F67
 BCS +				;if STP is greater than CS, just increment the CS
 STA $0F67			;otherwise, just use the STP
@@ -324,7 +324,7 @@ BRA .give
 
 								;Mario New Graphics
 LDA #$00
-JSR GetChar
+JSR GetCharacter
 TAY
 LDA.w CharOffsets,y
 STA $0F

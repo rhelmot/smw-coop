@@ -223,7 +223,7 @@ ORA $0DA7                   ; \
 EOR $00
 AND #$F0                ;  |If any buttons have been pressed that aren't this frame
 BEQ .succeed           ; / do some of the below
-LDA $0DA5       ; 
+LDA $0DA5       ;
 AND #$C0                ;
 BEQ .fail           ;
 EOR $0DA9                   ; Same as above, but for controller data 2?
@@ -287,7 +287,7 @@ PickOAMSlot:
 		PLX			;  |
 		STA $15EA,x		; /
 		RTL
-    
+
 SearchAlgorithm:
 		%bulkSpeedup($F0)	; \
 		%bulkSpeedup($E0)	;  | pre-defined
@@ -516,7 +516,7 @@ STA $7F837D,x
 INX : INX
 SEP #$20
 LDA #$00
-JSR GetChar
+JSR GetCharacter
 TAY
 PHB
 PHK
@@ -599,7 +599,7 @@ STA $7F837D,x
 INX : INX
 SEP #$20
 LDA #$01
-JSR GetChar
+JSR GetCharacter
 TAY
 PHB
 PHK
@@ -930,7 +930,7 @@ NOP
 org $00F801
 JSL VPosaverage
 
-org $0180D2           
+org $0180D2
 BRA +
 NOP #13
 +
