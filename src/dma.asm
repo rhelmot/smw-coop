@@ -51,22 +51,22 @@ STA $4320				;DMA channel #2 - $432x
 ;Mario's Palette
 ;;
 
-LDY #$8A				;CGRAM write address  - start writing at palette 8 color 6 (mario's stuff)
+LDY #$8A				;CGRAM write address  - start writing at palette 8 color A (mario's stuff)
 STY $2121
 JSR GetPaletteP1
-STA $4322				;DMA read address
+STA $4322 				;DMA read address
 LDA #$000C				;14 bytes of data
 STA $4325
 STX $420B				; Execute DMA
 
-LDY $0DB2
+LDY $0DB3
 BEQ .skip1
 
 ;;
 ;Luigi's Palette
 ;;
 
-LDY #$9A				;CGRAM write address  - start writing at palette 8 color 6 (mario's stuff)
+LDY #$9A				;CGRAM write address  - start writing at palette 9 color A (luigi's stuff)
 STY $2121
 JSR GetPaletteP2
 STA $4322				;DMA read address
@@ -100,7 +100,7 @@ LDA #$0040
 STA $4325                ; Some flag, idk
 STX $420B        ; Execute DMA
 
-LDY $0DB2
+LDY $0DB3
 BEQ .skip2
 
 ;;
@@ -159,7 +159,7 @@ INX #2
 CPX $0D84
 BCC .loop2
 
-LDY $0DB2
+LDY $0DB3
 BEQ .skip3
 
 ;;
