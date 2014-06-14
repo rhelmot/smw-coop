@@ -294,82 +294,57 @@ DoNone:
 SEP #$30
 JML $80A38F
 
-OWPindex:
-db $00,$0A,$14
-
-OWPalettes:
-dw $3739,$4FDE,$20BA,$2D1E,$459E
-dw $217A,$32DE,$3414,$4997,$0000
-dw $6AD6,$77BD,$456F,$5A35,$66FD
-
-OWDynams:
-db $02,$03,$00,$01,$04,$05,$04,$05
-db $02,$03,$00,$01,$04,$05,$04,$05
-db $06,$06,$06,$06,$07,$07,$07,$07
 
 OWUpload:
-LDY #$B8
-STY $2121
-LDY #$3B
-STY $2122
-LDY #$57
-STY $2122
-
-LDA #$00
-JSR GetCharacter
-TAX
-LDA.l OWPindex,x
 REP #$20
-AND #$00FF
-CLC
-ADC #OWPalettes
+LDX #$04
+
+LDY #$B8             ; \
+STY $2121            ;  |
+LDY #$3B             ;  | Write to CGRAM B8 -- the bg color for the walking-mario area?
+STY $2122            ;  |
+LDY #$57             ;  |
+STY $2122            ; /
+
+LDA $0F3A
+CMP #$FFFF            ; Cancel all uploads if necessary
+BEQ DoNone
+
+;;
+;Mario palette
+;;
+
+LDA $0F3A                 ;Upload address
 STA $4322
-LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
-STA $4320				;DMA channel #2 - $432x
-LDY #$A3				;CGRAM write address  - start writing at palette 8 color 6 (mario's stuff)
-STY $2121
-PHK
-PLY
+LDY $0F3C                 ;Upload bank
 STY $4324
+LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
+STA $4320		 		;DMA channel #2 - $432x
+LDY #$A3			  	;CGRAM write address  - start writing at palette A color 3
+STY $2121
 LDA #$000A				;14 bytes of data
 STA $4325
-LDY #$04
-STY $420B
+STX $420B
 
-SEP #$20
-LDA #$01
-JSR GetCharacter
-TAX
-LDA.l OWPindex,x
-REP #$20
-AND #$00FF
-CLC
-ADC #OWPalettes
+;;
+;Luigi palette
+;;
+
+LDA $0F42                 ;Upload address
 STA $4322
-LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
-STA $4320				;DMA channel #2 - $432x
-LDY #$B3				;CGRAM write address  - start writing at palette 8 color 6 (mario's stuff)
-STY $2121
-PHK
-PLY
+LDY $0F44                 ;Upload bank
 STY $4324
+LDA #$2200				;DMA to $2122 - CGRAM write data - 1 reg write once
+STA $4320			 	;DMA channel #2 - $432x
+LDY #$B3			  	;CGRAM write address  - start writing at palette B color 3
+STY $2121
 LDA #$000A				;14 bytes of data
 STA $4325
-LDY #$04
-STY $420B
+STX $420B
 
-SEP #$20
-LDA $14
-AND #$08
-LSR #3
-ORA $1F13
-PHX
-TAX
-LDA.l OWDynams,x
-PLX
-STA $00
-REP #$20
-
+;;
+;Mario tile - top row
+;;
 
 LDY #$80
 STY $2115
@@ -377,62 +352,62 @@ LDA #$6000
 STA $2116
 LDA #$1801				;$2118 - 2 regs 1 write
 STA $4320
-SEP #$20
-LDA #$00
-JSR GetCharacter
-ASL #3
-CLC
-ADC $00
-CLC
-ADC #$90
-STA $0F5F
-JSR TileToAddr
+LDA $0F3D
 STA $4322
-LDY #$7E
+CLC
+ADC #$0200
+STA $00
+LDY $0F3F
 STY $4324
 LDA #$0040
 STA $4325
-LDY #$04
-STY $420B
+STX $420B                ; Execute DMA
+
+;;
+;Luigi tile - top row
+;;
 
 LDA #$0040
 STA $4325
-SEP #$20
-LDA #$01
-JSR GetCharacter
-ASL #3
-CLC
-ADC $00
-CLC
-ADC #$90
-JSR TileToAddr
+LDA $0F45
 STA $4322
-LDY #$04
-STY $420B
+CLC
+ADC #$0200
+STA $02
+LDY $0F47
+STY $4324
+STX $420B                ; Execute DMA
 
-STZ $01
+;;
+;Decide whether to DMA the actual tile or the water bottoms instead
+;;
+
 SEP #$20
 LDA $1F13
+CMP #$12
+BEQ .waterbottom
 SEC
 SBC #$08
 CMP #$08
-BCC +
-SEC
-SBC #$0A
-CMP #$02			;Setup water bottoms src addr
-BCS ++
-+
-LDA $00
+BCS .regularbottom
+.waterbottom
+LDA $14
 REP #$20
-AND #$0001
+AND #$0008
 BEQ +
 LDA #$0200
 +
 CLC
-ADC #$78C0
-STA $01
+ADC #!WATERTILESADDR
+STA $00
+STA $02
 
-++
+.regularbottom
+
+;;
+;Mario tile - bottom row
+;;
+
 REP #$20
 LDY #$80
 STY $2115
@@ -440,45 +415,22 @@ LDA #$6100
 STA $2116
 LDA #$1801				;$2118 - 2 regs 1 write
 STA $4320
-LDA $01
-BNE +
-SEP #$20
-LDA #$00
-JSR GetCharacter
-ASL #8
-CLC
-ADC $00
-JSR TileToAddr
-CLC
-ADC #$4A00
-+
+LDA $00
 STA $4322
-LDY #$7E
+LDY $0F3F
 STY $4324
 LDA #$0040
 STA $4325
-LDY #$04
-STY $420B
+STX $420B                ;Execute DMA
+
+;;
+;Luigi tile - bottom row
+;;
 
 LDA #$0040
 STA $4325
-LDA $01
-BNE +
-SEP #$20
-LDA #$01
-JSR GetCharacter
-ASL #8
-CLC
-ADC $00
-JSR TileToAddr
-CLC
-ADC #$4A00
-+
+LDA $02
 STA $4322
-LDY #$04
-STY $420B
+STX $420B                 ;Execute DMA
 
 JMP DoNone
-
-ExGraphics:
-incbin ../graphics/ExtendGFX.bin

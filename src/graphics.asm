@@ -889,47 +889,47 @@ RTS
 ;;;;;;;;;
 
 CalcDir:
-LDA $1493
-BNE .alwaysright
-LDA $0F6A
-BIT #$04
-BNE .climbing
-LDA $0DB9
-BIT #$22
-BNE .return
-LDA $0F63
-BIT #$0C
-BNE .next
-LDA $13
-LSR
-LSR
-AND #$01
-STA $157C,x
-RTS
-.next
-LDA $0DA3
-AND #$03
-BEQ .return
-AND #$01
-STA $157C,x
-.return
-RTS
-.alwaysright
-LDA #$01
-STA $157C,x
-RTS
-.climbing
-LDA $0DA3
-BIT #$0F
-BEQ .return
-LDA $151C,x
-BNE .return
-LDA #$08
-STA $151C,x
-LDA $157C,x
-EOR #$01
-STA $157C,x
-RTS
+    LDA $1493
+    BNE .alwaysright
+    LDA $0F6A
+    BIT #$04
+    BNE .climbing
+    LDA $0DB9
+    BIT #$22
+    BNE .return
+    LDA $0F63
+    BIT #$0C
+    BNE .next
+    LDA $13
+    LSR
+    LSR
+    AND #$01
+    STA $157C,x
+    RTS
+    .next
+    LDA $0DA3
+    AND #$03
+    BEQ .return
+    AND #$01
+    STA $157C,x
+    .return
+    RTS
+    .alwaysright
+    LDA #$01
+    STA $157C,x
+    RTS
+    .climbing
+    LDA $0DA3
+    BIT #$0F
+    BEQ .return
+    LDA $151C,x
+    BNE .return
+    LDA #$08
+    STA $151C,x
+    LDA $157C,x
+    EOR #$01
+    STA $157C,x
+    RTS
 
 
 ;;;;;;;;;;;;;;;
@@ -940,70 +940,168 @@ RTS
 ;;;;;;;;;;;;;;;
 
 GetPaletteP1:
-SEP #$20
-LDA $0F63
-BIT #$03
-BEQ .totesRegular
-LDA $71                    ; Check current animation
-CMP #$04
-BEQ FireFlashPalette
-LDA $1490                    ; Check if has star
-BNE StarFlashPalette
-LDA $19
-CMP #$03                    ; Check if fire
-BNE .totesRegular
-REP #$20
-LDA #$B30C
-RTS
-.totesRegular
-LDA #$00
-JMP UniversalEnd
+    SEP #$20
+    LDA $0F63
+    BIT #$03
+    BEQ .totesRegular
+    LDA $71                    ; Check current animation
+    CMP #$04
+    BEQ FireFlashPalette
+    LDA $1490                    ; Check if has star
+    BNE StarFlashPalette
+    LDA $19
+    CMP #$03                    ; Check if fire
+    BNE .totesRegular
+    REP #$20
+    LDA #$B30C
+    RTS
+    .totesRegular
+    LDA #$00
+    JMP UniversalEnd
 
-FireFlashPalette:
-LDA $13
-LSR
-BRA BothFlashPalette
+    FireFlashPalette:
+    LDA $13
+    LSR
+    BRA BothFlashPalette
 
-StarFlashPalette:
-LDA $14
-ASL
+    StarFlashPalette:
+    LDA $14
+    ASL
 
-BothFlashPalette:
-REP #$20
-AND #$001E
-CLC
-ADC #$B2C8
-RTS
+    BothFlashPalette:
+    REP #$20
+    AND #$001E
+    CLC
+    ADC #$B2C8
+    RTS
 
 GetPaletteP2:
-SEP #$20
-LDA $0F63
-BIT #$0C
-BEQ .totesRegular
-LDY $0F65
-LDA $1504,y                ; Check current animation
-CMP #$08
-BEQ FireFlashPalette
-LDA $1570,y                ; Check if has star
-BNE StarFlashPalette
-LDA $0DB9                    ; Check if fire
-AND #$18
-CMP #$18
-BNE .totesRegular
-REP #$20
-LDA #$B30C
-RTS
-.totesRegular
-LDA #$01
+    SEP #$20
+    LDA $0F63
+    BIT #$0C
+    BEQ .totesRegular
+    LDY $0F65
+    LDA $1504,y                ; Check current animation
+    CMP #$08
+    BEQ FireFlashPalette
+    LDA $1570,y                ; Check if has star
+    BNE StarFlashPalette
+    LDA $0DB9                    ; Check if fire
+    AND #$18
+    CMP #$18
+    BNE .totesRegular
+    REP #$20
+    LDA #$B30C
+    RTS
+    .totesRegular
+    LDA #$01
 
-UniversalEnd:
-JSR GetCharacter
-ASL
-PHX
-TAX
-REP #$20
-LDA $00E2AA,x            ; Load from list of pointers to different palettes
-PLX
-CLC
-ADC #$0008
-RTS
+    UniversalEnd:
+    JSR GetCharacter
+    ASL
+    PHX
+    TAX
+    REP #$20
+    LDA $00E2AA,x            ; Load from list of pointers to different palettes
+    PLX
+    CLC
+    ADC #$0008
+    RTS
+
+
+OWPindex:
+db $00,$0A,$14
+
+OWPalettes:
+dw $3739,$4FDE,$20BA,$2D1E,$459E
+dw $217A,$32DE,$3414,$4997,$0000
+dw $6AD6,$77BD,$456F,$5A35,$66FD
+
+OWDynams:
+db $02,$03,$00,$01,$04,$05,$04,$05
+db $02,$03,$00,$01,$04,$05,$04,$05
+db $06,$06,$06,$06,$07,$07,$07,$07
+
+!WATERTILESADDR = $78C0
+
+OWOAM:
+    LDA #$F0
+    STA $02A1       ; futz with (make invisible) a whole lot of OAM addresses
+    STA $02A5
+    STA $02A9
+    STA $02AD
+    STA $02C1
+    STA $02C5
+    STA $02C9
+    STA $02CD
+    STA $02D1
+
+    STZ $029E		;player 1 tile
+    LDA #$02
+    STA $02BE		;player 2 tile
+    LDA #$80
+    TSB $0409        ; \  set 16x16-ness?
+    TSB $040B        ; /
+
+        ; Set up addresses to DMA graphics and palettes from
+
+    LDA #$00
+    JSR GetCharacter
+    TAX
+    LDA.l OWPindex,x
+    REP #$20
+    AND #$00FF
+    CLC
+    ADC.w #OWPalettes
+    STA $0F3A
+    PHK
+    PLY
+    STY $0F3C
+    STY $0F44
+
+    SEP #$20
+    LDA #$01
+    JSR GetCharacter
+    TAX
+    LDA.l OWPindex,x
+    REP #$20
+    AND #$00FF
+    CLC
+    ADC #OWPalettes
+    STA $0F42
+
+
+    SEP #$20                     ; \
+    LDA $14                      ;  |
+    AND #$08                     ;  |
+    LSR #3                       ;  |
+    ORA $1F13                    ;  |
+    PHX                          ;  | Pick out pose
+    TAX                          ;  |
+    LDA.l OWDynams,x             ;  |
+    PLX                          ;  |
+    CLC                          ;  |
+    ADC #$90                     ;  |
+    STA $00                      ; /
+
+    LDA #$00
+    JSR GetCharacter
+    ASL #3
+    CLC
+    ADC $00
+    JSR TileToAddr
+    STA $0F3D
+    SEP #$20
+    LDA #$7E
+    STA $0F3F
+    STA $0F47
+
+    LDA #$01
+    JSR GetCharacter
+    ASL #3
+    CLC
+    ADC $00
+    JSR TileToAddr
+    STA $0F45
+    SEP #$20
+    RTS

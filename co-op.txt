@@ -16,6 +16,11 @@ List A: RAM Map
 0F44  :  Address from which to upload Luigi's head tile (16-bit)
 0F46  :  Address from which to upload Luigi's foot tile (16-bit)
 
+0F3A  :  On the OW, the 24-bit address from which to upload Mario's palette - set low bytes to FFFF to disable OW uploads
+0F3D  :  On the OW, the 24-bit address from which to upload Mario's OW tile
+0F42  :  On the OW, the 24-bit address from which to upload Luigi's palette
+0F45  :  On the OW, the 24-bit address from which to upload Luigi's OW tile
+
 0F5E  :  unused!
 0F5F  :  unused!
 0F60  :  unused!

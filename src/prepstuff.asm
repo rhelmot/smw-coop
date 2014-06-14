@@ -78,28 +78,6 @@ LDA #$0F
 STA $0F63
 RTS
 
-OWOAM:
-LDA #$F0
-STA $02A1       ; futz with a whole lot of OAM addresses
-STA $02A5
-STA $02A9
-STA $02AD
-
-STA $02C1
-STA $02C5
-STA $02C9
-STA $02CD
-
-STA $02D1
-;	STA $029D
-STZ $029E		;player 1
-LDA #$02
-STA $02BE		;player 2
-LDA #$80
-TSB $0409
-TSB $040B
-RTS
-
 PrepExist:
 LDA #$03
 LDY $0DB4

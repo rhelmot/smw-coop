@@ -13,6 +13,9 @@ dw END_FREESPACE-START_FREESPACE^#$FFFF
 reset bytes
 START_FREESPACE:
 
+ExGraphics:
+incbin ../graphics/ExtendGFX.bin
+
 incsrc prepstuff.asm			;a big switch() for the game modes
 incsrc mainrun.asm				;the primary spread of code
 incsrc deadcode.asm				;code to execute while dead
