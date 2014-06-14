@@ -1,3 +1,8 @@
+pushpc
+org $00A300
+JML BEGINDMA
+pullpc
+
 OWEdgeCase:
 LDA $141A
 BNE ContinUpload

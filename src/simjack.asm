@@ -1,6 +1,68 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;Hijacks from afterthoughs.asm;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+org $008E6B				; Probably hijacks the time up routine
+JSL KillBoth				; Defined in miscroutines.asm
+
+org $0491E0			; Examine plz
+LDA #$80
+STA $1DFB
+
+org $03E05C			; Examine plz
+GenMushroom:
+JSR $C318
+RTL
+
+org $01FFBF			; Examine plz
+UpdateXposNoGrvty:
+JSR $ABCC
+RTL
+EndLevel:
+JSR $C0E7
+RTL
+GenShellessKoopa:
+JSR $96E1
+RTL
+
+org $04FFB1			; Examine plz
+EndRT:
+JSR $E5EE
+RTS
+
+org $00DB36			; Examine plz
+db $20
+TYA
+LSR
+AND #$0E
+ORA $13F0
+TAY
+LDA $DABD,y
+BIT $1878
+
+org $00D5F9			; Examine plz
+STZ $73
+
+org $00AC86			; Examine plz
+LDA #$0005
+STA $06
+LDA #$0001
+STA $08
+JSR $ACFF
+LDA #$B0B0
+STA $00
+
+org $00ACD3			; Examine plz
+LDX #$0000
+-
+LDA $B304,x
+STA $0853,x
+INX
+INX
+CPX #$000C
+BNE -
+SEP #$30
+RTS
+
+org $02FCCD			; Examine plz
+LDA $0F
+NOP
 
 org $048F93
 db $00				;save after every level
@@ -31,7 +93,7 @@ org $028AD2
 INC $0DB4
 
 ;FastROM registration data
-org $7FD5
+org $FFD5
 db $30
 
 org $00DF1A
@@ -111,7 +173,7 @@ NOP
 ;org $00E317		;player palette - $0D82 is unused now, right?
 ;NOP #3
 
-org $01E2F3				
+org $01E2F3
 LDY #$00
 NOP
 
@@ -206,4 +268,3 @@ LDA #$00
 NOP
 
 ;;;$0DB9
-
