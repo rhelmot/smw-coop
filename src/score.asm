@@ -59,10 +59,3 @@ NewLives:
 		JML $82AE03
 	.onlyL
 		JML $82AE35
-
-; So far as I can tell these were unused... let's see if anyone notices them missing
-
-;.xoffset
-;dw $FFF0,$0010,$FFF0,$0000,$0000,$FFF0,$FFE0,$0000,$0000
-;.yoffset
-;dw $0010,$0010,$0010,$0030,$FFF0,$0010,$0030,$FFF0,$0010
