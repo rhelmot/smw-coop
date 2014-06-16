@@ -14,7 +14,7 @@
 	; requires (implies) the SMALLPLAYERS flag to be FALSE.
 
 !PLAYERKNOCKBACK = 1				; Use a knockback effect on player injury
-!SMALLPLAYERS = 0					; Allow players to have the "small mario" state
+!SMALLPLAYERS = 1					; Allow players to have the "small mario" state
 
 org $009322
 autoclean JML EverySingleFrame			;primary hijack - label found in prepstuff.asm
@@ -25,7 +25,11 @@ print "Inserted at $", pc
 incsrc src/prepstuff.asm			;a big switch() for the game modes
 incsrc src/mainrun.asm				;the primary spread of code
 incsrc src/deadcode.asm				;code to execute while dead
-incsrc src/graphics.asm				;graphics routines
+if !THREEPLAYER
+incsrc src/graphics3p.asm				;graphics routines
+else
+incsrc src/graphics2p.asm
+endif
 incsrc src/dma.asm					;Vblank code for DMAing stuff
 incsrc src/animations.asm			;handling for $1504,x
 incsrc src/miscroutines.asm			;misc. JSR routines

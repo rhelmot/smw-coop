@@ -26,7 +26,6 @@ CMP #$14
 BNE ++
 +
 -
-LDA $1337
 JSR RunInLevel              ; If "Title Screen" or "Level", run main code
 BRA .end
 ++

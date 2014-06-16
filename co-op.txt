@@ -43,12 +43,12 @@ List A: RAM Map
 
 142C-142F: various scratch
 
-1504,x:  Current animation. See List A. Set high bit to teleport afterwards.
+1504,x:  Current animation. See List B. Set high bit to teleport afterwards.
 1510,x:  Current frame, $13E0 values
 151C,x:  Animation Timer. Like $1496
 1528,x:  Will always be #$75. Used to identify sprite.
 1534,x:  Cape image. Like $13DF
-1540,x:  Animation timer? Marked as flashing timer
+1540,x:  Flashing timer
 154C,x:  timer to show picking up frame or kicking frame
 1558,x:  used to indicate whether or not player is turning around. Used in graphics rt and sliding-smoke
 1564,x:  Time to show fireball frame

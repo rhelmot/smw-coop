@@ -27,12 +27,14 @@ GravityData:
 db $06,$03
 
 Continue:
+if !THREEPLAYER || !!SMALLPLAYERS
 LDA $0DB9
 BIT #$18
 BNE +
-LDA #$08                ; If small luigi, make big luigi (for ponies-- no small state)
+LDA #$08                ; If small luigi, make big luigi
 TSB $0DB9
 +
+endif
 STZ $1588,x
 STZ $164A,x
 JSR TickPhysics

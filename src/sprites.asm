@@ -1,12 +1,11 @@
 Sprites:
 LDX #$0B		;Load # of sprites
 INTRLOOP:					;Loopstart above get-self-clipping so moar scratch ram can be used
+CPX $0F65
+BEQ NEXTSPR
 LDA $14C8,x
 CMP #$08
 BCC NEXTSPR
-LDA $1528,x
-CMP #$75
-BEQ NEXTSPR
 LDA $154C,x
 BNE NEXTSPR
 JSL $83B69F		;get clipping for client sprite
@@ -63,9 +62,7 @@ RTS
 ClipWithMe:		;Uses: $00,$01,$02,$03,$08,$09
 PHX
 LDX $0F65
-LDA $0DB9
-LSR
-AND #$01
+JSR GetHeight
 TAY
 LDA $E4,x
 STA $00                   ; $00 = (Sprite X position + displacement) Low byte
@@ -87,10 +84,10 @@ PLX
 RTS
 
 .tentwenty
-db $10,$00
+db $00,$10
 
 .negtentwenty
-db $20,$10
+db $10,$20
 
 GetBrownPlatClip:
 LDA $14B8

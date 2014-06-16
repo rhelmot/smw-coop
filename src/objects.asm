@@ -238,9 +238,8 @@ LSR
 STA $142E
 LDA #$0E
 TRB $0F6A
-LDA $0DB9
-BIT #$02
-BNE .smallluigi
+JSR GetHeight
+BEQ .smallluigi
 LDY #$0E
 BRA .loopinit
 .smallluigi

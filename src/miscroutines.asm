@@ -3,6 +3,18 @@ db $14,$24,$30
 MinusMax:
 db $EC,$DC,$D0
 
+GetHeight:
+LDA $0DB9
+BIT #$02
+BNE .small
+BIT #$18
+BEQ .small
+LDA #$01
+RTS
+.small
+LDA #$00
+RTS
+
 GetCharacterLong:
 JSR GetCharacter
 RTL
@@ -291,35 +303,48 @@ LDA $1540,x
 BNE .end
 LDA $0DB9
 AND #$18
+if !THREEPLAYER || !!SMALLPLAYERS
 CMP #$08
+endif
 BEQ KillLuigi
+
+if !!PLAYERKNOCKBACK && (!SMALLPLAYERS && !!THREEPLAYER)
+CMP #$00
+BNE +
+LDA #$06
+STA $1504,x
+LDA #$30
+STA $1510,x
++
+endif
+
 
 LDA #$04
 STA $1DF9
 LDA #$18
 TRB $0DB9
+if !THREEPLAYER || !!SMALLPLAYERS
 LDA #$08
 TSB $0DB9
+endif
 
+if !PLAYERKNOCKBACK
 LDA #$D8
 STA $AA,x
 LDA $157C,x
 BNE +
 LDA #$18
-BRA $02
+BRA ++
 +
 LDA #$E8
+++
 STA $B6,x
+endif
+
 LDA #$60
 STA $1540,x
 .end
 RTS
-
-KillBoth:
-JSL $00F606
-KillLuigiLong:
-JSR KillLuigi
-RTL
 
 ;;;;;;;;;
 ;
@@ -363,6 +388,12 @@ LDA #$23
 STA $1DF9				; Play pwoooooo sound effect
 .end
 RTS
+
+KillBoth:
+JSL $00F606
+KillLuigiLong:
+JSR KillLuigi
+RTL
 
 ;;;;;;;;;
 ;

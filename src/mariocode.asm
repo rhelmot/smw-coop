@@ -41,13 +41,13 @@ CMP #$F8
 BCS .notokay
 NotFarRightRealEnd:
 
-
+if !THREEPLAYER || !!SMALLPLAYERS
 							;No Small mario
 LDA $19
 BNE +
 INC $19
 +
-
+endif
 								;MARIO COMES BACK
 LDA $0F63
 BIT #$02

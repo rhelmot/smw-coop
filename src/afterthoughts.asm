@@ -736,6 +736,7 @@ LuigiOWLives:				; Stripe Image Bullshit -- though it's additional bullshit I di
 		PLB
 		RTL
 
+if !THREEPLAYER || !!SMALLPLAYERS
 pushpc
 org $00F5D5
 JML BigDeath
@@ -748,7 +749,16 @@ BigDeath:
 		JML $80F5D9
 	+
 		JML $80F606
+else
+pushpc
+org $00F5D5
+LDA $19
+BEQ $2D
+pullpc
+endif
 
+
+if !PLAYERKNOCKBACK
 pushpc
 org $00F5FE
 JSL KickBack
@@ -769,6 +779,18 @@ KickBack:
 		LDA #$60
 		STA $1497
 		RTL
+else
+pushpc
+org $00F5FE
+STA $71
+	if !THREEPLAYER || !!SMALLPLAYERS
+	STA $19
+	else
+	STZ $19
+	endif
+LDA #$2F
+pullpc
+endif
 
 pushpc
 org $00C98B
