@@ -26,16 +26,6 @@ PlayerCode:
 	.singleplayer
 		RTL
 
-CoinLife:
-		LDA $0DB5
-		CMP #$63
-		BEQ .return
-		INC $0DB5
-	.return
-		LDA $0DBF
-		SEC
-		RTL
-
 pushpc
 org $00F71D
 JSL Posaverage

@@ -8,7 +8,7 @@
 
 ; Adjust the following variables to taste. 0 = False, 1 = True
 
-!THREEPLAYER = 1					; "Three player" mode
+!THREEPLAYER = 0					; "Three player" mode
 	; 3p mode isn't actually 3p co-op but rather a mode where there are three characters and which ones
 	; you play as depend on which save file you chose. Uses a /very/ different graphics format, which
 	; requires (implies) the SMALLPLAYERS flag to be FALSE.
@@ -42,5 +42,5 @@ ExGraphics:
 incbin graphics/ExtendGFX.bin
 
 
-
+print "Used data ends at $",pc
 print "Used ",freespaceuse," bytes"

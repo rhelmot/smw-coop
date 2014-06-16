@@ -97,7 +97,7 @@ BNE -
 .donescore
 
 ;;
-;Coins
+;Coins counting
 ;;
 
 LDA $13CC
@@ -109,13 +109,29 @@ CMP #$64
 BCC .nocoins
 INC $0DB4
 INC $0DB5
+LDA $0DBF
+SEC
+SBC #$64
+STA $0DBF
 .nocoins
+
+;;
+;P1 Lives
+;;
+
 LDA $0DB4
 BMI +
 CMP #$62
 BCC +
 LDA #$62
 STA $0DB4
++
+LDA $0DB5
+BMI +
+CMP #$62
+BCC +
+LDA #$62
+STA $0DB5
 +
 LDA $0DB4
 INC
@@ -128,11 +144,7 @@ STX $0F16		; \ P1 lives
 STA $0F17		; /
 
 ;;
-;Bonus stars would go here but WHOOPS
-;;
-
-;;
-;Coins
+;Coins rendering
 ;;
 
 LDA $0DBF
@@ -145,11 +157,24 @@ STA $0F0E		; \ Coins
 STX $0F0D		; /
 
 ;;
-;Additional missing bonus stars
+;Yoshi coins
 ;;
+
+LDX #$00
+LDA #$2E
+-
+CPX $1420
+BNE +
+LDA #$FC
++
+STA $0EFF,x
+INX
+CPX #$06
+BNE -
 
 if !THREEPLAYER
 	LDA #$00
+	print "Bad things happening at $",pc
 	JSL GetCharacterLong
 	TAX
 	LDA.l NameOffsets,x
@@ -236,9 +261,6 @@ org $04A514
 					  db $32,$3C,$33,$3C,$34,$3C,$8F,$38
 					  db $50,$82,$00,$09,$FC,$3C,$FC,$3C
                       db $FC,$3C,$FC,$3C,$FC,$3C,$FF
-
-org $008F32
-JSL CoinLife
 
 org $01C545
 NOP
