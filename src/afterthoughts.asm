@@ -568,6 +568,7 @@ LuigiOWLives:				; Stripe Image Bullshit -- though it's additional bullshit I di
 		PHB
 		PHK
 		PLB
+	if !THREEPLAYER
 		LDA.w NameOffsets,y
 		TAY
 	-
@@ -584,6 +585,20 @@ LuigiOWLives:				; Stripe Image Bullshit -- though it's additional bullshit I di
 		BEQ +
 		CPY #$0F
 		BNE -
+	+
+	else
+		LDY #$30
+	-
+		TYA
+		STA $7F837D,x
+		INX
+		LDA #$28
+		STA $7F837D,x
+		INX
+		INY
+		CPY #$35
+		BNE -
+	endif
 	+
 		PLB
 		LDA #$8F
@@ -611,6 +626,7 @@ LuigiOWLives:				; Stripe Image Bullshit -- though it's additional bullshit I di
 	.nosecondname
 		PLB
 		RTL
+
 	+
 		TYA
 		CLC
@@ -651,6 +667,7 @@ LuigiOWLives:				; Stripe Image Bullshit -- though it's additional bullshit I di
 		PHB
 		PHK
 		PLB
+	if !THREEPLAYER
 		LDA.w NameOffsets,y
 		TAY
 	-
@@ -668,6 +685,19 @@ LuigiOWLives:				; Stripe Image Bullshit -- though it's additional bullshit I di
 		CPY #$0F
 		BNE -
 	+
+	else
+		LDY #$40
+	-
+		TYA
+		STA $7F837D,x
+		INX
+		LDA #$28
+		STA $7F837D,x
+		INX
+		INY
+		CPY #$45
+		BNE -
+	endif
 		PLB
 		LDA #$8F
 		STA $7F837D,x

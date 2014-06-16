@@ -1,54 +1,11 @@
-org $008E6B				; Probably hijacks the time up routine
+pushpc
+
+org $008E6B				; hijacks the time up routine
 JSL KillBoth				; Defined in miscroutines.asm
 
-org $0491E0			; Examine plz
-LDA #$80
-STA $1DFB
+; TODO: Disable special climbing net features in 3p mode
 
-org $03E05C			; Examine plz
-GenMushroom:
-JSR $C318
-RTL
-
-org $01FFBF			; Examine plz
-UpdateXposNoGrvty:
-JSR $ABCC
-RTL
-EndLevel:
-JSR $C0E7
-RTL
-GenShellessKoopa:
-JSR $96E1
-RTL
-
-org $04FFB1			; Examine plz
-EndRT:
-JSR $E5EE
-RTS
-
-org $00DB36			; Examine plz
-db $20
-TYA
-LSR
-AND #$0E
-ORA $13F0
-TAY
-LDA $DABD,y
-BIT $1878
-
-org $00D5F9			; Examine plz
-STZ $73
-
-org $00AC86			; Examine plz
-LDA #$0005
-STA $06
-LDA #$0001
-STA $08
-JSR $ACFF
-LDA #$B0B0
-STA $00
-
-org $00ACD3			; Examine plz
+org $00ACD3			; Overrides the end of the palette loading routine-- does... something different.
 LDX #$0000
 -
 LDA $B304,x
@@ -60,7 +17,7 @@ BNE -
 SEP #$30
 RTS
 
-org $02FCCD			; Examine plz
+org $02FCCD			; Use some different value in rendering boo ring?
 LDA $0F
 NOP
 
@@ -268,3 +225,6 @@ LDA #$00
 NOP
 
 ;;;$0DB9
+
+
+pullpc

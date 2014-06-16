@@ -1,105 +1,208 @@
+pushpc
+
 org $008C81     ;status bar tilemap
 db $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC	;That's the four tiles for the top of the item box
 
-db $FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C		;Mario
+db $30,$28,$31,$28,$32,$28,$33,$28,$34,$28		;Mario
 db $FC,$FC,$FC,$FC,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$FC
-db $FC,$3C,$3D,$3C,$3E,$3C				;TIME
+db $FC,$3C,$3D,$3C,$3E,$3C						;TIME
 db $3F,$3C,$FC,$38,$FC,$38
-db $2E,$3C,$26,$38,$FC,$38				;Coin symb.
-db $FC,$38,$00,$38,$FC,$3C	;|of the
-db $FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C	;/status bar
+db $2E,$3C,$26,$38,$FC,$38						;Coin symb.
+db $FC,$38,$00,$38,$FC,$3C						;|of the
+db $40,$28,$41,$28,$42,$28,$43,$28,$44,$28		;/status bar
 
-db $FC,$38,$26,$38,$FC,$38,$05,$38	;\Second
+db $26,$38,$FC,$38,$05,$38,$FC,$38	;\Second
 db $FC,$38,$FC,$3C,$FC,$FC,$FC,$28	;|Line
 db $FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C	;|of
 db $FC,$3C,$FC,$3C,$FC,$38,$FC,$38	;|the
 db $FC,$38,$FC,$38,$FC,$38,$FC,$38	;|status
 db $FC,$38,$00,$38,$FC,$3C,$26,$38	;|bar
-db $FC,$38,$05,$38,$FC,$3C,$FC,$3C	;/but the last two bytes are not
-db $FC,$3C,$FC,$3C,$FC,$3C		;bottom 4 tiles of the item box
+db $FC,$38,$05,$38,$FC,$3C
 
-org $008E72
-STA $0F20               ;  |
-LDA $0F32               ;  |shift time five to the left
-STA $0F21               ;  |
-LDA $0F33               ;  |
+db $FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C		;bottom 4 tiles of the item box
+
+pullpc
+
+CharNames:					; For 3p mode-- the three characters' names
+db $0B,$15,$18,$18,$16
+db $1C,$0C,$18,$18,$1D
+db $0B,$0E,$15,$15,$0E
+NameOffsets:				;Where each player starts in the next table
+db $00,$05,$0A
+
+pushpc
+
+org $008E6F
+StatusBarDraw:		; ...SMW's time rendering loop is stupid, it's
+LDX #$00			; actually way smaller unrolled
+LDA $0F31
+BNE +				; ...actually most of SMW's status bar routine
+LDX #$01			; is stupid with my new setup, whoops I'm gonna
+LDA #$FC			; rewrite the whole thing
++
+STA $0F20
+LDA $0F32
+BNE +
+CPX #$00
+BEQ +
+LDA #$FC
++
+STA $0F21
+LDA $0F33
 STA $0F22
 
-org $008F7E
-STA $0F0E
-STX $0F0D
+;;
+;Score
+;;
 
-org $008F3B
+LDA $0F36		; I have no idea what this hunk does
+STA $00
+STZ $01
+REP #$20
+LDA $0F34
+SEC
+SBC #$423F
+LDA $00
+SBC #$000F
+BCC +
+SEP #$20
+LDA #$0F
+STA $0F36,x
+LDA #$42
+STA $0F35
+LDA #$3F
+STA $0F34
++
+SEP #$20
+
+LDA $0F36
+STA $00
+STZ $01
+LDA $0F35
+STA $03
+LDA $0F34
+STA $02
+LDX #$0F
+LDY #$00
+JSR $9012
+LDX #$00
+-
+LDA $0F24,x
+BNE .donescore
+LDA #$FC
+STA $0F24,x
+INX
+CPX #$06
+BNE -
+.donescore
+
+;;
+;Coins
+;;
+
+LDA $13CC
+BEQ .nocoins
+DEC $13CC
+INC $0DBF
+LDA $0DBF
+CMP #$64
+BCC .nocoins
+INC $0DB4
+INC $0DB5
+.nocoins
 LDA $0DB4
-BMI $09
+BMI +
 CMP #$62
-BCC $05
+BCC +
 LDA #$62
 STA $0DB4
++
 LDA $0DB4
+INC
+JSR $9045		; HexToDec
+TXY
+BNE +
+LDX #$FC
++
+STX $0F16		; \ P1 lives
+STA $0F17		; /
 
-org $008F55
-STX $0F17		;\shift lives one to the right
-STA $0F18		;/
-JMP $8F73		; Kill bonus stars
+;;
+;Bonus stars would go here but WHOOPS
+;;
 
-org $008F86
-LDA #$00
-JSL GetCharacterLong
-TAX
-LDA.l NameOffsets,x
-TAX
-LDY #$00
--
-LDA.l CharNames,x
-STA $0EF9,y
-INX
-INY
-CPY #$05
-BNE -
+;;
+;Coins
+;;
+
+LDA $0DBF
+JSR $9045		; HexToDec
+TXY
+BNE +
+LDX #$FC
++
+STA $0F0E		; \ Coins
+STX $0F0D		; /
+
+;;
+;Additional missing bonus stars
+;;
+
+if !THREEPLAYER
+	LDA #$00
+	JSL GetCharacterLong
+	TAX
+	LDA.l NameOffsets,x
+	TAX
+	LDY #$00
+	-
+	LDA.l CharNames,x
+	STA $0EF9,y
+	INX
+	INY
+	CPY #$05
+	BNE -
+endif
 LDA $0DB3
-BNE TwoPlayerDraw
-LDA #$FC
-STA $0F2C
-STA $0F2E
-STA $0F2D
+BNE .twoPlayerDraw
+LDA #$FC		; Clear out:
+STA $0F2C		; x
+STA $0F2E		; lives
+STA $0F2D		; lives
+STA $0F10		; L
+STA $0F11		; U
+STA $0F12		; I
+STA $0F13		; G
+STA $0F14		; I
 RTS
-TwoPlayerDraw:
-LDA #$26
-STA $0F2C
-LDA #$01
-JSL GetCharacterLong
-TAX
-LDA.l NameOffsets,x
-TAX
-LDY #$00
--
-LDA.l CharNames,x
-STA $0F10,y
-INX
-INY
-CPY #$05
-BNE -
+.twoPlayerDraw
+if !THREEPLAYER
+	LDA #$01
+	JSL GetCharacterLong
+	TAX
+	LDA.l NameOffsets,x
+	TAX
+	LDY #$00
+	-
+	LDA.l CharNames,x
+	STA $0F10,y
+	INX
+	INY
+	CPY #$05
+	BNE -
+endif
 LDA $0DB5
 INC
 JSL $00974C
-STA $0F2E
-STX $0F2D
-CPX #$00
-BNE NoNeedEnd
-LDA #$FC
-STA $0F2D
-NoNeedEnd:
+TXY
+BNE +
+LDX #$FC
++
+STA $0F2E		; \ P2 lives
+STX $0F2D		; /
 RTS
 
-org $008ED8
-db $0F			;move score back 0B
-
-org $008EE2
-db $22
-
-org $008EE9
-db $22
+print "Status bar ends at ",pc
 
 org $009E13
 JSL PlayerCode
@@ -166,3 +269,6 @@ BRA $07
 HexToDecHijack:
 JSR $DC3A
 RTL
+
+
+pullpc

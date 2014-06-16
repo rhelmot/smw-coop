@@ -88,6 +88,13 @@ LDX $0F65
 EndGoal:
 RTS
 
+pushpc
+org $01FFBF			; Bank 1 freespace
+EndLevel:
+JSR $C0E7
+RTL
+pullpc
+
 GoalWalk:
 LDA $1493
 BEQ .end

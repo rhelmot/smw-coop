@@ -1,10 +1,3 @@
-NameOffsets:				;Where each player starts in the next table
-db $00,$05,$0A
-CharNames:					;BLOOM, SCOOT, BELLE
-db $0B,$15,$18,$18,$16
-db $1C,$0C,$18,$18,$1D
-db $0B,$0E,$15,$15,$0E
-
 PlusMax:					;Maximum horizontal motion speeds in various conditions
 db $14,$24,$30
 MinusMax:

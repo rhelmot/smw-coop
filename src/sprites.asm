@@ -2248,6 +2248,13 @@ JSL GenMushroom
 PLY
 RTS
 
+pushpc
+org $03E05C			; Freespace - just allows this call to be made from our bank
+GenMushroom:
+JSR $C318
+RTL
+pullpc
+
 SpriteC8:
 RTS
 
