@@ -45,7 +45,7 @@ List A: RAM Map
 
 1504,x:  Current animation. See List B. Set high bit to teleport afterwards.
 1510,x:  Current frame, $13E0 values
-151C,x:  Animation Timer. Like $1496
+151C,x:  Animation Timer. Like $1496. Also used for the time to show feet peddling frames
 1528,x:  Will always be #$75. Used to identify sprite.
 1534,x:  Cape image. Like $13DF
 1540,x:  Flashing timer

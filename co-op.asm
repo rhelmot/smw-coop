@@ -13,7 +13,7 @@
 	; you play as depend on which save file you chose. Uses a /very/ different graphics format, which
 	; requires (implies) the SMALLPLAYERS flag to be FALSE.
 
-!PLAYERKNOCKBACK = 1				; Use a knockback effect on player injury
+!PLAYERKNOCKBACK = 0				; Use a knockback effect on player injury
 !SMALLPLAYERS = 1					; Allow players to have the "small mario" state
 
 org $009322
@@ -43,7 +43,11 @@ incsrc src/simjack.asm				;hex edits/hijacks that don't use freespace
 incsrc src/statusbar.asm			;modification to the status bar/OW border
 
 ExGraphics:
-incbin graphics/ExtendGFX.bin
+if !THREEPLAYER
+incbin graphics/ExtendGFX_3p.bin
+else
+incbin graphics/ExtendGFX_2p.bin
+endif
 
 
 print "Used data ends at $",pc

@@ -953,7 +953,7 @@ GetPaletteP1:
     CMP #$03                    ; Check if fire
     BNE .totesRegular
     REP #$20
-    LDA #$B30C
+    LDA #$B304
     RTS
     .totesRegular
     LDA #$00
@@ -972,7 +972,7 @@ GetPaletteP1:
     REP #$20
     AND #$001E
     CLC
-    ADC #$B2C8
+    ADC #$B2C0
     RTS
 
 GetPaletteP2:
@@ -991,7 +991,7 @@ GetPaletteP2:
     CMP #$18
     BNE .totesRegular
     REP #$20
-    LDA #$B30C
+    LDA #$B304
     RTS
     .totesRegular
     LDA #$01
@@ -1004,8 +1004,6 @@ GetPaletteP2:
     REP #$20
     LDA $00E2AA,x            ; Load from list of pointers to different palettes
     PLX
-    CLC
-    ADC #$0008
     RTS
 
 

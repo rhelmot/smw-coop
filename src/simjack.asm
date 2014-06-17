@@ -55,8 +55,8 @@ db $30
 
 org $00DF1A
 db $00,$00,$00,$00,$00,$00,$00,$00
-db $00,$00,$00,$00,$00,$00,$00,$00		;remapping that came with one of the DMA patches I assimilated
-db $00,$00,$00,$00,$00,$00,$00,$00
+db $00,$00,$00,$00,$00,$00,$00,$00		; remapping that came with the Mario 8x8 DMA patch
+db $00,$00,$00,$00,$00,$00,$00,$00		; I've rewritten pretty much all of the code, but these tables stay
 db $00,$00,$00,$00,$00,$00,$00,$00
 db $00,$00,$00,$00,$00,$00,$00,$00
 db $00,$00,$00,$00,$00,$00,$00,$00

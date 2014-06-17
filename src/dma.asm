@@ -56,11 +56,11 @@ STA $4320				;DMA channel #2 - $432x
 ;Mario's Palette
 ;;
 
-LDY #$8A				;CGRAM write address  - start writing at palette 8 color A (mario's stuff)
+LDY #$86				;CGRAM write address  - start writing at palette 8 color A (mario's stuff)
 STY $2121
 JSR GetPaletteP1
 STA $4322 				;DMA read address
-LDA #$000C				;14 bytes of data
+LDA #$0014				;14 bytes of data
 STA $4325
 STX $420B				; Execute DMA
 
@@ -71,11 +71,11 @@ BEQ .skip1
 ;Luigi's Palette
 ;;
 
-LDY #$9A				;CGRAM write address  - start writing at palette 9 color A (luigi's stuff)
+LDY #$96				;CGRAM write address  - start writing at palette 9 color A (luigi's stuff)
 STY $2121
 JSR GetPaletteP2
 STA $4322				;DMA read address
-LDA #$000C				;14 bytes of data
+LDA #$0014				;14 bytes of data
 STA $4325
 STX $420B				; Execute DMA
 
@@ -387,6 +387,7 @@ STX $420B                ; Execute DMA
 ;Decide whether to DMA the actual tile or the water bottoms instead
 ;;
 
+if !THREEPLAYER
 SEP #$20
 LDA $1F13
 CMP #$12
@@ -408,6 +409,7 @@ STA $00
 STA $02
 
 .regularbottom
+endif
 
 ;;
 ;Mario tile - bottom row

@@ -70,7 +70,11 @@ dw PipesGo
 dw PipesGo
 dw FreezeMotion
 dw HurtLuigiAni
+if !THREEPLAYER
 dw GrowLuigiAni
+else
+dw HurtLuigiAni
+endif
 dw FreezeAndLock
 dw PipeShot
 dw FreezeLockNoshow
@@ -165,13 +169,21 @@ BIT #$03
 BNE .statusquo
 BIT #$07
 BNE .setsize
+if !THREEPLAYER
 LDA #$2E
+else
+LDA #$3D
+endif
 STA $1510,x
 BRA .statusquo
 .setsize
 CMP #$10
 BCC .small
+if !THREEPLAYER
 LDA #$02
+else
+LDA #$46
+endif
 STA $1510,x
 BRA .statusquo
 .small
@@ -181,6 +193,7 @@ JSR SUB_GFX
 JSR DRAW_BUBBLE
 RTS
 
+if !THREEPLAYER
 GrowLuigiAni:
 LDA $151C,x
 BIT #$03
@@ -202,6 +215,7 @@ STZ $1510,x
 JSR SUB_GFX
 JSR DRAW_BUBBLE
 RTS
+endif
 
 PipeShot:
 LDA #$11

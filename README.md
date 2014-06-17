@@ -3,6 +3,10 @@
 
 Hey there! Lemme tell you a story.
 
+*Much of this story no longer applies, as I have reclaimed my SMW wizardry 
+title and reimplemented the Mario/Luigi mode and added a flag to toggle 
+between the two.*
+
 Once upon a time I was a Super Mario World Hacker.
 I might still be. I don't know. But I was a really good hacker, and I wrote 
 a wonderful little patch for SMW to add simultaious 2-player mode, a la
@@ -48,15 +52,14 @@ I was able to build the project from a clean SMW ROM with the following steps:
 
 - Stick the clean rom in the rom directory, named something convenient (I used 
 coop.smc)
+- Rename the folder of graphics in `rom` you want to just "Graphics"
 - Open the ROM in Lunar Magic
 - Check the checkbox in the Options menu for "Used joined GFX files"
 - Press the green mushroom button to insert AllGFX.bin
 - Click the rainbow star, then the red star with the red arrow
-- Select the cmc.pal file in the rom directory
+- Select one of the .pal files from the rom directory
 - Click the save button in the Palette Editor
-- Find some freespace (the patch requires 20,000 bytes right now)
-- Mark the freespace in co-op.asm
-- Run the following, in the src directory: `<path to xkas> co-op.asm ../rom/coop.smc`
+- Run the following, in the project root: `<path to asar> co-op.asm rom/coop.smc`
 - Bam.
 
 Contributing
