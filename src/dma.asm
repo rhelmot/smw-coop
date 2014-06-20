@@ -171,14 +171,20 @@ BEQ .skip3
 ;Upper halves of Luigi's tiles
 ;;
 
+if !SEPERATEGFX && !!THREEPLAYER
+LDA.l SeperatePointer+2
+TAY
+else
+LDY #$7E
+endif
+STY $4324
+
 LDA #$6200
 STA $2116
 LDX #$00
 .loop3
 LDA $0F44,x
 STA $4322
-LDY #$7E
-STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
@@ -199,8 +205,8 @@ LDA $0F44,x
 CLC
 ADC #$0200
 STA $4322
-LDY #$7E
-STY $4324
+;LDY #$7E
+;STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
@@ -262,6 +268,14 @@ AND #$18
 CMP #$10
 BNE .nocapeluigi
 
+if !SEPERATEGFX && !!THREEPLAYER
+LDA.l SeperatePointer+2
+TAY
+else
+LDY #$7E
+endif
+STY $4324
+
 LDX $0F65
 REP #$20
 LDA #$6060
@@ -273,8 +287,6 @@ TAY
 LDA.w CapeAddresses,y
 STA $4322
 PHA
-LDY #$7E
-STY $4324
 LDA #$0040
 STA $4325
 LDY #$04
@@ -286,8 +298,6 @@ PLA
 CLC
 ADC #$0200
 STA $4322
-LDY #$7E
-STY $4324
 LDA #$0040
 STA $4325
 LDY #$04

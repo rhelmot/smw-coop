@@ -451,8 +451,6 @@ TileToAddr:
 		AND #$00F8
 		ASL #7		;each line of 16x16 tiles is $400 bytes, so multiply top 5 bits by $400/8 or 2^7 (b/c they're already multiplied by 8)
 		CLC
-		ADC #$2000	;use the graphics for regular mario, decompressed at $7E2000
-		CLC
 		ADC $06		;add frame offset
 		RTS
 
@@ -641,6 +639,10 @@ EightCalcs:
 	++
 		CLC
 		ADC.w #ExGraphics
+if !SEPERATEGFX && !!THREEPLAYER
+		CLC
+		ADC #$0400					; skip two rows of 8x8s
+endif
 		STA $0F42
 		SEP #$20
 		RTS
@@ -656,10 +658,22 @@ SixteenCalcs:
 		LDY $05
 		LDA ($00),y
 		JSR TileToAddr
+		CLC
+if !SEPERATEGFX && !!THREEPLAYER
+		ADC.w #SeperateP2GFX
+else
+		ADC #$2000
+endif
 		STA $0F46
 		SEP #$20
 		LDA ($02),y
 		JSR TileToAddr
+		CLC
+if !SEPERATEGFX && !!THREEPLAYER
+		ADC.w #SeperateP2GFX
+else
+		ADC #$2000
+endif
 		STA $0F44
 		PLA
 		STA $00
@@ -969,10 +983,14 @@ MarioNewGraphics:
 
 		LDA ($00),y
 		JSR TileToAddr                ;  |
+		CLC
+		ADC #$2000
 		STA $0F3C                     ;  |
 		SEP #$20                      ;  |
 		LDA ($02),y         		  ;  | Set addresses to DMA tiles from
 		JSR TileToAddr                ;  |
+		CLC
+		ADC #$2000
 		STA $0F3E                     ;  |
 		SEP #$20                      ; /
 		RTS
