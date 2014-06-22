@@ -1332,9 +1332,8 @@ STA $1DF9
 LDA $1588,x
 ORA #$08
 STA $1588,x
-LDA $0DB9
-BIT #$02
-BNE .hitheadsolidsmall
+JSR GetHeight
+BEQ .hitheadsolidsmall
 LDA $D8,x
 AND #$F0
 CLC

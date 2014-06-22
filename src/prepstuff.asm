@@ -13,7 +13,9 @@ PHB
 PHK
 PLB
 ;Check Game mode!
+if !THREEPLAYER
 JSR BerryFixes
+endif
 LDA $0100                   ; Load current game mode
 CMP #$02
 BNE ++
@@ -57,6 +59,7 @@ PHA
 SEP #$20
 RTL
 
+if !THREEPLAYER
 BerryFixes:
 REP #$20
 LDA $0D76
@@ -71,6 +74,7 @@ STA $0D76
 ++
 SEP #$20
 RTS
+endif
 
 InitOnce:
 LDA #$0F

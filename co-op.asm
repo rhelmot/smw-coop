@@ -15,13 +15,13 @@
 
 !PLAYERKNOCKBACK = 0				; Use a knockback effect on player injury
 !SMALLPLAYERS = 1					; Allow players to have the "small mario" state
-!SEPERATEGFX = 1					; Use seperate graphics for players 1 and 2.
+!SEPERATEGFX = 0					; Use seperate graphics for players 1 and 2.
 
 org $009322
 autoclean JML EverySingleFrame			;primary hijack - label found in prepstuff.asm
 
 freecode
-prot SeperateP2GFX
+if !SEPERATEGFX : prot SeperateP2GFX : endif
 print "Inserted at $", pc
 
 incsrc src/prepstuff.asm			;a big switch() for the game modes
