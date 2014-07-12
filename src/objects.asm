@@ -233,26 +233,22 @@ RTS
 
 TileTouches:
 LDA $0F6A
-AND #$04
+AND #$04			; Climbing on net
 LSR
-STA $142E
-LDA #$0E
-TRB $0F6A
+STA $142E			; Was climbing last frame 
+LDA #$0E			; \ Reset all the different climbing flags
+TRB $0F6A			; /
 JSR GetHeight
 BEQ .smallluigi
-LDY #$0E
-BRA .loopinit
+LDY #$10
+BRA .loopinit		; Basically if you're small use a different set of hitpoint values
 .smallluigi
-LDY #$FE			;00
+LDY #$00
 .loopinit
-STY $142D
-LDA #$00			;00
+STY $142D			; Current hitpoint index goes in $142D
+LDA #$00
 .loopstart
-STA $142C
-LDY $142D
-INY
-INY
-STY $142D
+STA $142C			; Which hitpoint we're currently on (0,1,2..7) goes in $142C
 LDA $14E0,x
 XBA
 LDA $E4,x
@@ -303,19 +299,18 @@ STA $04
 REP #$10
 TAX
 SEP #$20
-LDA $7FC800,x
-XBA
-LDA $7EC800,x
-REP #$20
-STA $0E
-SEP #$30
+LDA $7FC800,x			; \ 
+STA $0F					;  | Load current Map16 number into $0F:$0E
+LDA $7EC800,x			;  |
+STA $0E					; / 
+SEP #$10
 LDX $15E9
-LDA $E4,x
-AND #$0F
-STA $06
-LDA $D8,x
-AND #$0F
-STA $07
+LDA $E4,x				; \ 
+AND #$0F				;  |
+STA $06					;  | $06 = x-pos % 16
+LDA $D8,x				;  | $07 = y-pos % 16
+AND #$0F				;  |
+STA $07					; / 
 JSR BlockRoutines
 .premature
 SEP #$30
@@ -323,29 +318,33 @@ LDA $142C
 INC
 CMP #$08
 BEQ .loopend
+LDY $142D
+INY
+INY
+STY $142D
 JMP .loopstart
 .loopend
 RTS
 
 
 BlockRoutines:
-LDA $0F
-BEQ .blanksjmpa
+LDA $0F				; \ Everything on Map16 page 0 is walk-through :P 
+BEQ .blanksjmpa		; /
 LDA $0E
 CMP #$11
-BCC .cloudsjmpa
+BCC .cloudsjmpa		; Everything 100 - 110 acts like a cloud-ledge
 PHA
 SEC
 SBC #$10
 CMP #$49
 PLA
-BCC .solidsjmpa
+BCC .solidsjmpa		; Everything 111 - 158 acts like a solid block
 CMP #$6E
-BCC .tssolidsjmp
+BCC .tssolidsjmp	; tileset specific solids
 CMP #$FB
-BCS .deathwater
+BCS .deathwater		; 1FB - 1FF are lava
 CMP #$D8
-BCS .jipblocks
+BCS .jipblocks		; 1D8 - 1FA "pick-up" slope blocks
 CMP #$D2
 BCS +
 CMP #$CE
@@ -420,15 +419,15 @@ JSR KillLuigi
 +
 RTS
 
-.jipblocks
+.jipblocks			; "pick-up" slope blocks
 LDA $142C
 CMP #$02
-BCS +
+BCS +				; Don't interact with anything but feet
 LDA $AA,x
-BMI +
-LDA $07
-CMP #$05
-BCS +
+BMI +				; Don't interact if moving upward
+;LDA $07
+;CMP #$08
+;BCS +
 LDA #$0F
 STA $07
 REP #$30
@@ -693,7 +692,7 @@ dw .solids
 dw .ghost
 dw .solids
 
-.hurtthensolid				;\
+.hurtthensolid				;\ 
 JSR HurtLuigi				; |EXACTLY WHAT'S ON THE TIN
 JMP .solids					;/
 
@@ -1427,7 +1426,7 @@ RTS
 
 BlockSparkle:
 LDA $15C4,x
-;LDA $15A0,x                   ;\
+;LDA $15A0,x                   ;\ 
 ;ORA $186C,x                 ; |Return if player offscreen
 BNE .return          ;/
 LDY #$03                
@@ -1534,27 +1533,27 @@ LDA $0E
 SEC
 SBC #$EC
 CMP #$10
-BCS .end
+BCS .end			; Only match the right block numbers
 BIT #$02
-BNE .end
+BNE .end			; Only match the tops! :P
 LSR
 LSR
-TAY
+TAY					; Turn it into an index by color, [green, yellow, blue, red]
 LDA $1F27,y
-BNE .end
+BNE .end			; If we've already gotten this switch palace, nope the heck out of here
 INC
-STA $1F27,y
-STA $13D2
-STY $191E
+STA $1F27,y			; Mark this palace gotten
+STA $13D2			; Enable switch palace message
+STY $191E			; Which depressed switch sprite to leave behind
 LDA #$20
-STA $1887
+STA $1887			; Set earthquake timer
 PHY
 LDY #$02
 LDA #$60
-STA $009E,y
+STA $009E,y			; Spawn sprite x60 (flag switch) in hardcoded slot 2?
 LDA #$08
 STA $14C8,y
-LDA $9A
+LDA $9A				; Set x/y position based on positions of the block the player is currently touching
 STA $00E4,y
 LDA $9B
 STA $14E0,y
@@ -1567,16 +1566,16 @@ ADC #$00
 STA $14D4,y
 PHX
 TYX
-JSL $07F7D2
+JSL $07F7D2			; Load sprite tables
 PLX
-LDA #$5F
-STA $1540,y
+LDA #$5E			; In all.log this is 5F, but it's a timer and there's an off-by-one error somewhere because it's being spawned elsewhere???
+STA $1540,y			; Set some sprite property
 LDA #$0C
-STA $1DFB
+STA $1DFB			; Set music
 LDA #$FF
-STA $0DDA
+STA $0DDA			; Set sound effect
 LDA #$08
-STA $1493
+STA $1493			; Set end level timer
 PLY
 .end
 PLA

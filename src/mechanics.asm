@@ -41,52 +41,49 @@ STZ $0F64
 RTS
 
 GoalCheck:
-LDY #$0B
-GoalLoop:										;GOAL
-LDA $009E,y
-CMP #$7B
-BEQ CheckSprite
-NotIt:
-DEY
-BPL GoalLoop
-BRA EndGoal
-CheckSprite:
-LDA $14C8,y
-CMP #$08
-BNE NotIt
-LDA $1534,y
-AND #$01
-STA $01
-LDA $1528,y
-STA $00
-LDA $14D4,x
-XBA
-LDA $D8,x
-REP #$20
-DEC
-CMP $00
-SEP #$20
-BCS NotIt
-LDA $14E0,y
-STA $01
-LDA $00E4,y
-STA $00
-LDA $14E0,x
-XBA
-LDA $E4,x
-REP #$20
-CLC
-ADC #$0008
-SEC
-SBC $00
-CMP #$0010
-SEP #$20
-BCS NotIt
-TYX
-JSL EndLevel
-LDX $0F65
-EndGoal:
-RTS
+		LDY #$0C
+	.loop										;GOAL
+		DEY
+		BMI .end
+		LDA $009E,y
+		CMP #$7B
+		BNE .loop
+		LDA $14C8,y
+		CMP #$08
+		BNE .loop
+		LDA $1534,y			; \ 
+		AND #$01			;  |
+		STA $01				;  |
+		LDA $1528,y			;  |
+		STA $00				;  |
+		LDA $14D4,x			;  |
+		XBA					;  | Don't trigger if under goal
+		LDA $D8,x			;  |
+		REP #$20			;  |
+		DEC					;  |
+		CMP $00				;  |
+		SEP #$20			;  |
+		BCS .loop			; /
+		LDA $14E0,y			; \ 
+		STA $01				;  |
+		LDA $00E4,y			;  |
+		STA $00				;  |
+		LDA $14E0,x			;  |
+		XBA					;  |
+		LDA $E4,x			;  |
+		REP #$20			;  | Trigger if within 8px of goal
+		CLC					;  |
+		ADC #$0008			;  |
+		SEC					;  |
+		SBC $00				;  |
+		CMP #$0010			;  |
+		SEP #$20			;  |
+		BCS .loop			; /
+		TYX
+		JSL EndLevel
+		LDX $0F65
+	.end
+		RTS
 
 pushpc
 org $01FFBF			; Bank 1 freespace
@@ -96,16 +93,22 @@ RTL
 pullpc
 
 GoalWalk:
-LDA $1493
-BEQ .end
-STZ $0DA3
-STZ $0DA5
-STZ $14A7
-STZ $14A9
-LDA #$05
-STA $B6,x
-.end
-RTS
+		LDA $1493
+		BEQ .end
+		STZ $0DA3
+		STZ $0DA5
+		STZ $14A7
+		STZ $14A9
+		LDA $1433
+		BEQ +
+		INC $0DA3
+		RTS
+
+	+
+		LDA #$06
+		STA $B6,x
+	.end
+		RTS
 
 Climbing:
 LDA $0F6A

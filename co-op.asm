@@ -21,7 +21,9 @@ org $009322
 autoclean JML EverySingleFrame			;primary hijack - label found in prepstuff.asm
 
 freecode
-if !SEPERATEGFX : prot SeperateP2GFX : endif
+if !SEPERATEGFX
+	prot SeperateP2GFX
+endif
 print "Inserted at $", pc
 
 incsrc src/prepstuff.asm			;a big switch() for the game modes
@@ -47,7 +49,7 @@ incsrc src/statusbar.asm			;modification to the status bar/OW border
 ExGraphics:
 if !THREEPLAYER
 	incbin graphics/ExtendGFX_3p.bin
-else
+else	
 	incbin graphics/ExtendGFX_2p.bin
 	if !SEPERATEGFX
 		incbin graphics/ExtendGFX_seperate_2p.bin

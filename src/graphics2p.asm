@@ -41,7 +41,7 @@ db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 db $00,$00,$00,$00,$00,$00,$00
 
 TopY:	                                        ;y offset for the top 8x8 tile for each pose
-db $05,$05,$05,$05,$10,$10,$10,$05,$05,$05,$05,$05,$18,$05,$05,$05
+db $05,$05,$05,$05,$20,$10,$10,$05,$05,$05,$05,$05,$18,$05,$05,$05
 db $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
 db $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
 db $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
@@ -174,6 +174,8 @@ DrawEights:
 	++
 		STA $0308,y
 		STA $030C,y
+		
+		LDX $05
 		LDA.w TopY,x
 		CLC
 		ADC $01
@@ -191,10 +193,7 @@ DrawEights:
 		STA $0309,y
 	+
 		LDA $01
-		PHX
-		LDX $05
 		LDA.w BotY,x
-		PLX
 		CLC
 		ADC $01
 		SEC
@@ -204,6 +203,7 @@ DrawEights:
 		STA $030A,y
 		INC
 		STA $030E,y
+		LDX $0F65
 		RTS
 
 TileProps:
@@ -801,18 +801,23 @@ CalcFrameSub:
 		JSR RunOCSet		;else, figure out how long next frame should be based on speed, store to $151C
 		LDA $1510,x			;load previous frame
 		BRA +
-	--
-		LDA #$02			;goto first walk frame
-		BRA .sprintshift
+		
 	+
-		CMP #$03
+		CMP #$07
 		BCC +
 		SEC
-		SBC #$04
+		SBC #$07
+		BRA ++
+		
 	+
+		CMP #$03
+		BCC ++
+		SEC
+		SBC #$04
+	++
 		DEC
 		CMP #$02			;if not a walk/run frame
-		BCS --
+		BCS .startcycle
 	.sprintshift
 		TAY
 		LDA $163E,x
@@ -823,11 +828,20 @@ CalcFrameSub:
 		TYA
 	.return
 		RTS
+	
+	.startcycle
+		LDA #$02			;goto first walk frame
+		BRA .sprintshift
 		
 	.movesame
 		LDA $1510,x
-		CMP #$06
-		BCS --
+		CMP #$03
+		BCC .stillgotit
+		CMP #$03
+		BEQ .startcycle
+		CMP #$0A
+		BCS .startcycle
+	.stillgotit
 		RTS
 
 		.inairh
