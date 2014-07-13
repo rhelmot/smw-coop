@@ -1178,8 +1178,7 @@ ADC #$00
 STA $03
 LDA #$10		;small height
 STA $0A
-LDA $0DB9
-BIT #$18
+JSR GetHeight
 BEQ +
 LDA #$20		;big height
 STA $0A
@@ -1200,9 +1199,13 @@ LDA $00D8,y
 STA $06			;platform Y
 LDA $14D4,y
 STA $07
+LDA $009E,y
+CMP #$5A
+BEQ .horizontal
 LDA $00C2,y
 AND #$02
 BNE .vertical
+.horizontal
 LDA $151C,y
 ASL
 CLC
@@ -1216,6 +1219,7 @@ LDA $05
 SBC #$00
 STA $05
 BRA .docalc
+
 .vertical
 LDA $151C,y
 ASL
@@ -1236,8 +1240,10 @@ SEC
 SBC #$0010
 CMP $06
 BCS .nottop
+SEP #$20
 LDA $AA,x
 BMI +
+REP #$20
 LDA $06
 SEC
 SBC #$000F
@@ -1254,6 +1260,7 @@ STA $1588,x
 ;TSB $0DB9
 +
 RTS
+
 .nottop
 LDA $0F
 CLC
@@ -1281,6 +1288,7 @@ LDA #$08
 ORA $1588,x
 STA $1588,x
 RTS
+
 .notbottom
 LDA $00
 CMP $04
@@ -1294,6 +1302,7 @@ LDA #$01
 ORA $1588,x
 STA $1588,x
 RTS
+
 .right
 LDA $04
 CLC
