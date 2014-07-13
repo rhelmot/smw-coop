@@ -523,7 +523,7 @@ TYA
 ASL #2
 STA $00
 LDA $142C
-BNE +
+BNE +					; Only interact with foot #0
 LDA #$01
 STA $0D
 LDA #$0F
@@ -538,7 +538,7 @@ ASL #2
 STA $00
 LDA $142C
 CMP #$01
-BNE +
+BNE +					; Only interact with foot #1
 LDA #$FF
 STA $0D
 LDA $06

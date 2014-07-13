@@ -1,8 +1,3 @@
-PlusMax:					;Maximum horizontal motion speeds in various conditions
-db $14,$24,$30
-MinusMax:
-db $EC,$DC,$D0
-
 GetHeight:
 LDA $0DB9
 BIT #$02

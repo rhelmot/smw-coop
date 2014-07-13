@@ -59,7 +59,6 @@ dw $7400,$7440,$7480,$74C0,$7500,$7540,$7580,$75C0
 dw $7800,$7840,$7880,$78C0,$7900,$7940,$7980,$79C0
 
 SUB_GFX:										;GRAPHICS
-LDA $1337
 		JSR Flashing
 		JSR GetDrawInfo
 		JSR YBump
@@ -115,6 +114,9 @@ DecidePriority:
 		RTS
 
 YBump:
+		LDA $0F6A
+		BIT #$20
+		BNE .sliding
 		LDA $0DB9
 		BIT #$18
 		BEQ .small
@@ -139,6 +141,11 @@ YBump:
 	.raise
 		DEC $01
 	.noraise
+		RTS
+		
+	.sliding
+		INC $01
+		INC $01
 		RTS
 
 DrawSixteens:
@@ -693,6 +700,9 @@ CalcFrameSub:
 		BIT #$04
 		BNE .underwater
 	-
+		LDA $0F6A
+		BIT #$20
+		BNE .sliding
 		LDA $154C,x
 		BNE .kickthing
 		LDA $0DB9
@@ -723,7 +733,11 @@ CalcFrameSub:
 	+
 		LDA #$00
 		RTS
-		
+	
+	.sliding
+		LDA #$1C
+		RTS
+	
 	.climbthing
 		LDA #$15
 		RTS

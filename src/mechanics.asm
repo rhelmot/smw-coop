@@ -206,6 +206,13 @@ TRB $0DB9
 LDA $0DA3
 BIT #$04
 BEQ .nodown
+LDA $0F69
+BEQ .dotheduck
+LDA #$20
+TSB $0F6A
+RTS
+
+.dotheduck
 LDA #$02
 TSB $0DB9
 BRA .end
@@ -224,7 +231,13 @@ LDA $B6,x
 BEQ .ngngngng
 LDA #$20
 TRB $0DB9
+RTS
 .ngngngng
+LDA $0F69
+BNE +
+LDA #$20
+TRB $0F6A
++
 RTS
 
 Swimming:
@@ -515,6 +528,8 @@ STZ $0F61
 LDA $0DA7		;\if pressing B
 ORA $0DA9		; |or A
 BPL .end		;/jump
+LDA #$20
+TRB $0F6A
 LDA $B6,x
 BPL +
 EOR #$FF
@@ -568,6 +583,13 @@ SEC
 SBC #$21
 CMP #$BE
 BCS .nope
+LDA $0F69
+BEQ +
+CMP #$01
+BEQ +
+CMP #$FF
+BNE .nope
++
 LDA $0F6A
 BIT #$01
 BNE +
@@ -596,35 +618,104 @@ STA $163E,x
 .nope
 RTS
 
+;;;;; Various movement stuff for various surfaces
+;;
+;; Format:
+;; 0: Maximum walking speed right
+;; 1: Maximum jogging speed right
+;; 2: Maximum running speed right
+;; 3: Maximum walking speed left
+;; 4: Maximum jogging speed left
+;; 5: Maximum running speed left
+;; 6: Rest speed
+;; 7: Sliding speed
+;; 8: Increment to move toward rest speed by
+;; 9: Increment to move toward sliding speed by
+
+; Very steep upward slopes, plus some labels to make it easier for everyone else:
+PlusMax:
+db $00,$00,$00
+MinusMax:
+db $00,$00,$00
+DefaultSpeeds:
+db $00,$00
+DefaultIncrements:
+db $00,$00
+; Steep upward slopes
+db $0F,$1B,$21,$DC,$DC,$D0,$F0,$D0,$02,$02
+; Normal upward slopes
+db $11,$20,$2C,$E8,$DC,$D0,$00,$D4,$01,$01
+; Gradual upward slopes
+db $14,$24,$30,$EC,$DC,$D0,$00,$D8,$01,$01
+; Flat ground
+db $14,$24,$30,$EC,$DC,$D0,$00,$00,$01,$01
+; Gradual downward slopes
+db $14,$24,$30,$EC,$DC,$D0,$00,$28,$01,$01
+; Normal downward slopes
+db $18,$24,$30,$EF,$E0,$D4,$00,$2C,$01,$01
+; Steep downward slopes
+db $24,$24,$30,$F1,$E5,$DF,$10,$30,$02,$02
+; Very steep downward slopes
+db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+
 Movement:
 LDA $0F6A
 BIT #$04
 BEQ +
-JMP .end
+RTS					; If we're climbing, screw this, we're done
+
 +
-LDY #$00
+LDA $0F69			; \ 
+CLC					;  |
+ADC #$04			;  | Get index to current slope type into various-speeds table above
+ASL					;  |
+STA $00				;  | I.E. multiply by #$0A.
+ASL					;  |
+ASL					;  | You thought the multiply by three trick was cool?
+CLC					;  | This is a whole new league, bitches.
+ADC $00				;  |
+STA $00				; /
+TAY
+
+LDA $0F6A
+BIT #$20
+BEQ +
+INY
++
+STY $01
+
+LDY $00
 LDA $0DA3
 ORA $0DA5
 BIT #$40
 BEQ .start
-INY
+INY					; If x/y pressed, Y += 1
 LDA $163E,x
 CMP #$70
 BCC .start
-INY
+INY					; if sprinting, Y += 2
+STY $02
+
 .start
 LDA $1588,x						;\				;MOVEMENT
 BIT #$04						; |if in air, don't slow down
-BEQ .bypassduck					;/
-LDA #$01
-TRB $0F6A
-LDA $0DB9						;\
+BEQ .inair						;/
+
+LDA #$01						; \ 
+TRB $0F6A						; / Set not sprinting
+
+LDA $0DB9						;\ 
 BIT #$02						; |if ducking, slow down
 BNE .slowdown					;/
-LDA $0DA3						;\
+
+LDA $0DA3						;\ 
 BIT #$03						; |if not pressing right/left, slow down
 BEQ .slowdown					;/
-.bypassquack
+
+.move
+LDA #$20
+TRB $0F6A
+LDA $0DA3
 BIT #$02
 BNE .goleft
 LDA $B6,x
@@ -637,11 +728,13 @@ ADC $B6,x
 CMP.w PlusMax,y
 BMI .okaystore
 BRA .slowdown
-.bypassduck
-LDA $0DA3						;\
+
+.inair
+LDA $0DA3						;\ 
 BIT #$03						; |if not pressing right/left, slow down
-BNE .bypassquack				;/
-JMP .end
+BNE .move						;/
+RTS
+
 .goleft
 LDA $B6,x
 BEQ .sigh
@@ -656,7 +749,7 @@ CMP.w MinusMax,y
 BMI .slowdown
 .okaystore
 STA $B6,x
-BRA .end
+RTS
 
 .turnrightfast
 LDA #$05
@@ -695,13 +788,32 @@ STA $B6,x
 BRA .end
 
 .slowdown
+LDY $01
+LDA.w DefaultIncrements,y
+STA $03
+CPY #31
+BEQ +
+CPY #51
+BNE ++
++
+LDA $14
+BIT #$01
+BEQ ++
+DEC $03
+++
 LDA $B6,x
-BMI .slowneg
+CMP.w DefaultSpeeds,y
 BEQ .end
-DEC
-DEC
-.slowneg
+BMI .slowneg
+LDA $03
+EOR #$FF
 INC
+BRA +
+.slowneg
+LDA $03
++
+CLC
+ADC $B6,x
 STA $B6,x
 .end
 RTS
@@ -711,6 +823,9 @@ LDA $1588,x
 BIT #$04
 BEQ .end
 LDA $1558,x
+BNE .yesyesyes
+LDA $0F6A
+BIT #$20
 BNE .yesyesyes
 LDA $0DB9
 AND #$02
