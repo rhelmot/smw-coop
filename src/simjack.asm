@@ -224,6 +224,9 @@ org $05DC03
 LDA #$00
 NOP
 
+org $0288A1
+db $78			; Always spawn 1-ups, no yoshis
+
 ;;;$0DB9
 
 
