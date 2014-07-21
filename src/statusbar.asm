@@ -4,7 +4,7 @@ org $008C81     ;status bar tilemap
 db $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC	;That's the four tiles for the top of the item box
 
 db $30,$28,$31,$28,$32,$28,$33,$28,$34,$28		;Mario
-db $FC,$FC,$FC,$FC,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$FC
+db $FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$3C,$FC,$FC
 db $FC,$3C,$3D,$3C,$3E,$3C						;TIME
 db $3F,$3C,$FC,$38,$FC,$38
 db $2E,$3C,$26,$38,$FC,$38						;Coin symb.

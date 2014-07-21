@@ -1,62 +1,62 @@
 HeadDynamsBig:										;which graphical tile corresponds to which pose for the head while big mario
 db $38,$38,$38,$50,$38,$38,$38,$38,$38,$38,$50,$3C,$38,$40,$38,$44
-db $FF,$FF,$FF,$FF,$FF,$58,$FF,$FF,$FF,$FF,$FF,$FF,$38,$72,$FF,$FF
+db $FF,$FF,$FF,$FF,$FF,$58,$38,$38,$38,$38,$38,$38,$38,$72,$FF,$FF
 db $FF,$FF,$FF,$FF,$67,$48,$5B,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 db $A1,$A2,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$65,$38,$8C,$4B
 db $65,$65,$FF,$FF,$48,$44,$28
 
 FootDynamsBig:										;which graphical tile corresponds to whichpose for the foot while big mario
 db $02,$01,$00,$02,$0C,$0B,$0A,$18,$17,$16,$18,$03,$0D,$04,$19,$07
-db $FF,$FF,$FF,$FF,$FF,$1E,$FF,$FF,$FF,$FF,$FF,$FF,$1A,$7A,$FF,$FF
+db $FF,$FF,$FF,$FF,$FF,$1E,$1B,$49,$1C,$4A,$1D,$51,$1A,$7A,$FF,$FF
 db $FF,$FF,$FF,$FF,$6A,$08,$5F,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 db $A9,$A9,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$06,$71,$8D,$53
 db $65,$65,$FF,$FF,$08,$07,$39
 
 HeadDynamsSmall:										;which graphical tile corresponds to which pose for the head while small mario
 db $28,$28,$28,$81,$28,$28,$28,$28,$28,$28,$81,$93,$28,$95,$28,$6D
-db $FF,$FF,$FF,$FF,$FF,$5E,$FF,$FF,$FF,$FF,$FF,$FF,$28,$65,$FF,$FF
+db $FF,$FF,$FF,$FF,$FF,$5E,$28,$28,$28,$28,$28,$28,$28,$65,$FF,$FF
 db $FF,$FF,$FF,$FF,$94,$5E,$6E,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 db $AC,$AC,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$65,$28,$8C,$FF
 db $65,$65,$FF,$FF,$5E,$6D,$38
 
 FootDynamsSmall:										;which graphical tile corresponds to whichpose for the foot while small mario
 db $39,$30,$30,$89,$4C,$4E,$4E,$52,$4F,$4F,$88,$9B,$5C,$9D,$57,$75
-db $FF,$FF,$FF,$FF,$FF,$66,$FF,$FF,$FF,$FF,$FF,$FF,$56,$69,$FF,$FF
+db $FF,$FF,$FF,$FF,$FF,$66,$59,$41,$5A,$47,$5C,$46,$56,$69,$FF,$FF
 db $FF,$FF,$FF,$FF,$9C,$66,$76,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 db $B4,$A5,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$A6,$71,$8D,$FF
 db $65,$65,$FF,$FF,$66,$75,$02
 
 CarryCorrections:								;which pose corresponds to the proper pose for carrying something
 db $07,$08,$09,$0A,$07,$08,$09,$07,$08,$09,$0A,$09,$09,$0F,$0E,$0F
-db $FF,$FF,$FF,$FF,$FF,$15,$FF,$FF,$FF,$FF,$FF,$FF,$1C,$1D,$1E,$FF
+db $FF,$FF,$FF,$FF,$FF,$15,$17,$17,$19,$19,$1B,$1B,$1C,$1D,$1E,$FF
 db $FF,$FF,$FF,$FF,$09,$25,$26,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 db $B4,$A5,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$1D,$3D,$3E,$3F
 db $40,$41,$FF,$FF,$44,$45,$07
 
 ExtraSet:										;which set of 8x8 tiles corresponds to each pose
 db $00,$00,$00,$00,$01,$01,$01,$00,$00,$00,$00,$00,$02,$00,$00,$00
-db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+db $00,$00,$00,$00,$00,$00,$04,$04,$05,$05,$06,$06,$00,$00,$00,$00
 db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 db $00,$00,$00,$00,$00,$00,$00
 
 TopY:	                                        ;y offset for the top 8x8 tile for each pose
-db $05,$05,$05,$05,$20,$10,$10,$05,$05,$05,$05,$05,$18,$05,$05,$05
-db $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
+db $05,$05,$05,$05,$10,$10,$10,$05,$05,$05,$05,$05,$10,$05,$05,$05
+db $05,$05,$05,$05,$05,$05,$10,$10,$10,$10,$10,$10,$05,$05,$05,$05
 db $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
 db $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
 db $05,$05,$05,$05,$05,$05,$05
 
 BotY:											;y offset for the bottom 8x8 tile for each pose
 db $14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$18,$14,$14,$14
-db $14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14
+db $14,$14,$14,$14,$14,$14,$18,$18,$18,$18,$18,$18,$14,$14,$14,$14
 db $14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14
 db $14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14
 db $14,$14,$14,$14,$14,$14,$14
 
 CapeAddresses:
-dw $7400,$7440,$7480,$74C0,$7500,$7540,$7580,$75C0
-dw $7800,$7840,$7880,$78C0,$7900,$7940,$7980,$79C0
+dw $0140,$1100,$1140,$0880,$0840,$0800,$0440,$1480
+dw $14C0,$10C0,$0DC0,$0000,$0000,$0000,$0000,$0000
 
 SUB_GFX:										;GRAPHICS
 		JSR Flashing
@@ -345,6 +345,9 @@ DrawCape:
 		STA $0311,y
 		LDA #$06
 		STA $0312,y
+		LDA $0313,y
+		AND #$F1
+		STA $0313,y
 		LDX $0F65
 		RTS
 
@@ -746,21 +749,21 @@ CalcFrameSub:
 		LDA $1588,x
 		BIT #$04
 		BNE -
-		LDA $15AC,x
+		LDA $151C,x
 		AND #$0F
 		CMP #$0C
 		BCC .swimframe2
-		LDA #$17
+		LDA #$18
 		RTS
 		
 	.swimframe2
 		CMP #$04
 		BCC .swimframe3
-		LDA #$18
+		LDA #$1A
 		RTS
 		
 	.swimframe3
-		LDA #$19
+		LDA #$16
 		RTS
 		
 	.dead

@@ -45,7 +45,7 @@ List A: RAM Map
 
 1504,x:  Current animation. See List B. Set high bit to teleport afterwards.
 1510,x:  Current frame, $13E0 values
-151C,x:  Animation Timer. Like $1496. Also used for the time to show feet peddling frames
+151C,x:  Animation Timer. Like $1496. Also used for the time to show feet peddling frames and swimming frames
 1528,x:  Will always be #$75. Used to identify sprite.
 1534,x:  Cape image. Like $13DF
 1540,x:  Flashing timer
@@ -56,7 +56,7 @@ List A: RAM Map
 157C,x:  direction. 0=left 1=right
 1588,x:  like mario's $77 - Player Blocked Status
 1594,x:  cape frame timer
-15AC,x:  Swimming frame timer
+15AC,x:  unused
 1602,x:  unused
 160E,x:  unused
 163E,x:  Dash timer

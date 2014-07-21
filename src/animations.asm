@@ -151,7 +151,11 @@ SEP #$20
 STA $D8,x
 XBA
 STA $14D4,x
+if !THREEPLAYER
 LDA #$0A
+else
+LDA #$0F
+endif
 STA $1510,x
 LDA $0F6A
 PHA
@@ -164,6 +168,8 @@ STA $0F6A
 RTS
 
 HurtLuigiAni:
+LDA #$2F
+STA $9D
 LDA $151C,x
 BIT #$03
 BNE .statusquo

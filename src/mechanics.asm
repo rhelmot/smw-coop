@@ -97,6 +97,8 @@ GoalWalk:
 		BEQ .end
 		STZ $0DA3
 		STZ $0DA5
+		STZ $0DA7
+		STZ $0DA9
 		STZ $14A7
 		STZ $14A9
 		LDA $1433
@@ -262,8 +264,8 @@ BEQ .notdowncarry
 LDA #$0E
 STA $1DF9
 LDA #$10
-ORA $15AC,x
-STA $15AC,x
+ORA $151C,x
+STA $151C,x
 TYA
 CLC
 ADC #$08
@@ -303,8 +305,8 @@ BNE .nobutton
 LDA #$0E
 STA $1DF9
 LDA #$10
-ORA $15AC,x
-STA $15AC,x
+ORA $151C,x
+STA $151C,x
 LDA $1588,x
 BIT #$04
 BEQ +
@@ -1025,5 +1027,47 @@ CMP #$01
 BNE +
 LDA $0DDA
 STA $1DFB
++
+RTS
+
+WaterInteraction:			; Called from objects.asm because why the hell not
+LDA $85				; \ 
+BEQ +				;  | If water level, be in water
+LDA #$04			;  |
+TSB $0DB9			; /
++
+LDA $0DB9
+BIT #$04
+BNE +
+LDA $14BE
+CMP #$03
+BNE +
+LDA #$40
+TSB $0F6A
+LDA #$04
+TSB $0DB9
+LDA $0DA3			;jump out of water
+ORA $0DA5
+AND #$88
+CMP #$88
+BNE .stop
+LDA $0DA5
+BPL .reg
+LDA $0DB9
+ROL #2
+AND #$01
+EOR #$01
+TSB $0DB9
+.reg
+LDA #$AA
+STA $AA,x
+LDA #$04
+TRB $0DB9
+JSR WaterSplash
+RTS
+
+.stop
+LDA #$04
+STA $AA,x
 +
 RTS

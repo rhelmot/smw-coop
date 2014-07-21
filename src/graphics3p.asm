@@ -44,8 +44,8 @@ CharOffsets:				;Starting tiles for players pre-dma
 db $00,$30,$60
 
 CapeAddresses:
-dw $7400,$7440,$7480,$74C0,$7500,$7540,$7580,$75C0
-dw $7800,$7840,$7880,$78C0,$7900,$7940,$7980,$79C0
+dw $5400,$5440,$5480,$54C0,$5500,$5540,$5580,$55C0
+dw $5800,$5840,$5880,$58C0,$5900,$5940,$5980,$59C0
 
 TileToAddr:
     REP #$20	;16bit A
@@ -716,7 +716,7 @@ RTS
 LDA $1588,x
 BIT #$04
 BNE -
-LDA $15AC,x
+LDA $151C,x
 AND #$0F
 CMP #$0C
 BCC +

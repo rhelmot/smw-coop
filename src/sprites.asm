@@ -425,7 +425,7 @@ DW Sprite6C
 DW Sprite6D
 DW Sprite6E
 DW Sprite6F
-DW Sprite4F
+DW Sprite70
 DW Sprite71
 DW Sprite72
 DW Sprite73
@@ -1538,30 +1538,29 @@ SolidSprite:
 LDA $14D4,y
 STA $03
 LDA $00D8,y
-STA $02
+STA $02			; $02 = Block's top
 STZ $04
 STZ $05
-LDA $0DB9
-AND #$18
+JSR GetHeight
 BEQ +
-LDA #$0F
-STA $04
+LDA #$0B
+STA $04			; $04 = Luigi's height - #$10
 +
 LDA $14D4,x
 STA $01
 XBA
 LDA $D8,x
-STA $00
+STA $00			;$00 = Luigi's y-position
 REP #$20
 SEC
 SBC $04
-STA $04			;$04 = Mario's top (b/c being big doesn't change the y-position)
+STA $04			;$04 = Luigi's top (b/c being big doesn't change the y-position)
 LDA $00
 CLC
 ADC #$0008
 CMP $02
 BCS .nottop
-SEP #$20
+SEP #$20		; We're standing on the block!
 LDA $AA,x
 BMI .endthing
 REP #$20
@@ -1578,13 +1577,14 @@ ORA $1588,x
 STA $1588,x
 LDA #$01
 RTS
+
 .nottop
 LDA $04
 SEC
 SBC #$000A
 CMP $02
 BCC .notbottom
-SEP #$20
+SEP #$20		; We're hitting our head on the block!
 LDA $AA,x
 BPL .endthing
 REP #$20
@@ -1599,15 +1599,17 @@ SEP #$20
 STA $D8,x
 XBA
 STA $14D4,x
-LDA #$18
+LDA #$FF
 STA $AA,x
 LDA #$01
 STA $1DF9
 LDA #$02
 RTS
+
 .endthing
-LDA #$00
+LDA #$00		; We hit nothing :(
 RTS
+
 .notbottom
 SEP #$20
 LDA $14E0,y
@@ -1648,7 +1650,53 @@ RTS
 Sprite6F:
 RTS
 
-Sprite70:
+Sprite70:		; Pokey
+LDX #$00
+LDA $00C2,y
+LSR
+BCC +
+INX
++
+LSR
+BCC +
+INX
++
+LSR
+BCC +
+INX
++
+LSR
+BCC +
+INX
++
+LSR
+BCC +
+INX
++
+TXA
+ASL #4
+EOR #$FF
+CLC
+ADC #$51
+STA $00		; $00 = Distance between pokey top and pokey ypos
+STZ $01
+LDA $14D4,y
+XBA
+LDA $00D8,y
+REP #$20
+PHA
+CLC
+ADC $00
+SEP #$20
+STA $00D8,y
+XBA
+STA $14D4,y
+LDX $0F65
+JSR Sprite4F	; Interact with as jumping pirannah
+PLA
+STA $00D8,y
+PLA
+STA $14D4,y
 RTS
 
 Sprite71:		;Swooper koopas

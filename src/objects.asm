@@ -31,44 +31,7 @@ LDA $5B
 BPL .nolayer2
 JSR Layer2
 .nolayer2
-LDA $85				; \
-BEQ +				;  | If water level, be in water
-LDA #$04			;  |
-TSB $0DB9			; /
-+
-LDA $0DB9
-BIT #$04
-BNE +
-LDA $14BE
-CMP #$03
-BNE +
-LDA #$40
-TSB $0F6A
-LDA #$04
-TSB $0DB9
-LDA $0DA3			;jump out of water
-ORA $0DA5
-AND #$88
-CMP #$88
-BNE .stop
-LDA $0DA5
-BPL .reg
-LDA $0DB9
-ROL #2
-AND #$01
-EOR #$01
-TSB $0DB9
-.reg
-LDA #$AA
-STA $AA,x
-LDA #$04
-TRB $0DB9
-JSR WaterSplash
-BRA +
-.stop
-LDA #$04
-STA $AA,x
-+
+JSR WaterInteraction
 LDA $1588,x
 BIT #$04		;reset various addresses if touching ground
 BEQ .offtheground
@@ -107,10 +70,8 @@ LDA $1588,x
 PHA
 STZ $1588,x
 LDA $14E0,x
-;PHA
 XBA
 LDA $E4,x
-;PHA
 REP #$20
 SEC
 SBC $1A
@@ -123,10 +84,8 @@ CLC
 ADC #$10		;forward 10 screens
 STA $14E0,x
 LDA $14D4,x
-;PHA
 XBA
 LDA $D8,x
-;PHA
 REP #$20
 SEC
 SBC $1C
@@ -137,14 +96,6 @@ STA $D8,x
 XBA
 STA $14D4,x
 JSR TileTouches			;layer 2 interaction
-; PLA
-; STA $D8,x
-; PLA
-; STA $14D4,x
-; PLA
-; STA $E4,x
-; PLA
-; STA $14E0,x
 LDA $1588,x
 STA $00
 PLA
@@ -191,22 +142,6 @@ SBC #$10
 STA $14E0,x
 
 LDA $1588,x
-; BIT #$30
-; BEQ .noside
-; LDA $17BF
-; STA $00
-; STZ $01
-; BPL +
-; DEC $01
-; +
-; LDA $E4,x
-; CLC
-; ADC $00
-; STA $E4,x
-; LDA $14E0,x
-; ADC $00
-; STA $14E0,x
-; .noside
 BIT #$C0
 BEQ .notobot
 STZ $01
@@ -296,15 +231,7 @@ CLC
 ADC $04
 STA $04
 .injection
-REP #$10
-TAX
-SEP #$20
-LDA $7FC800,x			; \ 
-STA $0F					;  | Load current Map16 number into $0F:$0E
-LDA $7EC800,x			;  |
-STA $0E					; / 
-SEP #$10
-LDX $15E9
+JSR LoadTileNumber
 LDA $E4,x				; \ 
 AND #$0F				;  |
 STA $06					;  | $06 = x-pos % 16
@@ -324,6 +251,31 @@ INY
 STY $142D
 JMP .loopstart
 .loopend
+RTS
+
+LoadTileNumber:
+REP #$10
+TAX
+SEP #$20
+LDA $7FC800,x			; \ 
+STA $0F					;  | Load current Map16 number into $0F:$0E
+LDA $7EC800,x			;  |
+STA $0E					; / 
+REP #$20
+LDA $06F624
+STA $00
+LDA $06F625
+STA $01
+LDA $0E
+.loopfurther			; \ 
+ASL						;  |
+TAY						;  | Loop through 'acts like' setting until it's something reasonable
+LDA [$00],y				;  |
+STA $0E					;  |
+CMP #$0200				;  |
+BCS .loopfurther		; /
+SEP #$30
+LDX $15E9
 RTS
 
 

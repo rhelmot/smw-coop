@@ -13,6 +13,9 @@ OWUploadJmp:
 JMP OWUpload
 
 BEGINDMA:
+PHB
+PHK
+PLB
 SEP #$20
 LDA $0100
 CMP #$0E
@@ -232,6 +235,8 @@ AND #$000F
 ASL
 TAY
 LDA.w CapeAddresses,y
+CLC
+ADC #$2000
 STA $4322
 PHA                      ; Save cape address
 LDY #$7E
@@ -261,7 +266,7 @@ STY $420B                ; Execute DMA 2 - bottom row
 ;;
 
 SEP #$20
-LDA $0DB2
+LDA $0DB3
 BEQ .nocapeluigi
 LDA $0DB9
 AND #$18
@@ -285,6 +290,12 @@ AND #$000F
 ASL
 TAY
 LDA.w CapeAddresses,y
+CLC
+if !SEPERATEGFX
+ADC.l SeperatePointer
+else
+ADC #$2000
+endif
 STA $4322
 PHA
 LDA #$0040
@@ -307,6 +318,7 @@ STY $420B                ; Execute DMA 2 - Bottom row
 
 DoNone:
 SEP #$30
+PLB
 JML $80A38F
 
 

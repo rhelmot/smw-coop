@@ -1,12 +1,17 @@
 EverySingleFrame:           ; Gets run... every single frame
 PHK                         ; Hijacks $00:9322, GetGameMode in all.log
 PEA.w .mycode-1
-PEA $84CE
+PEA $84CE					; This is just an RTL
 LDA #$80
 PHA
 PEA $9328
 LDA $0100
 JML $8086DF					;Run Game
+
+; So what's gonna happen is
+; We run the game mode code from the table
+; We return to that RTL
+; That RTL makes us go riiiight here:
 
 .mycode
 PHB
