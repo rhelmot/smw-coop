@@ -29,6 +29,9 @@ PlayerCode:
 pushpc
 org $00F71D
 JSL Posaverage
+
+org $00F770
+JSL Posaverage
 pullpc
 
 Posaverage:
