@@ -380,10 +380,7 @@ MarioDieProper:
 	.vertical
 		LDA $5D
 		AND #$00FF
-		ASL
-		ASL
-		ASL
-		ASL
+		ASL #8
 		CMP $96
 		SEP #$20
 		BPL .live
