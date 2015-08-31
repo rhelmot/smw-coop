@@ -263,6 +263,8 @@ LDA $7EC800,x			;  |
 STA $0E					; / 
 REP #$20
 LDA $06F624
+CMP #$FFFF				; \ If for some strange reason the pointer hasn't been installed yet, bail out
+BEQ .lm_not_installed   ; /
 STA $00
 LDA $06F625
 STA $01
@@ -274,6 +276,7 @@ LDA [$00],y				;  |
 STA $0E					;  |
 CMP #$0200				;  |
 BCS .loopfurther		; /
+.lm_not_installed
 SEP #$30
 LDX $15E9
 RTS
