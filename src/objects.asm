@@ -190,9 +190,10 @@ LDA $E4,x
 REP #$20
 CLC
 ADC.w DATA_00E830,y
-STA $00
 AND #$FFF0
-STA $9A
+STA $9A					; x-pos of contacted block
+LSR #4
+STA $00					; block x-index
 SEP #$20
 LDA $14D4,x
 XBA
@@ -200,23 +201,22 @@ LDA $D8,x
 REP #$20
 CLC
 ADC.w DATA_00E89C,y
-CMP #$01C0
-BCS .premature
 SEC
 SBC #$0010
 AND #$FFF0
-STA $04
-STA $98
+STA $98					; y-pos of contacted block
 LSR #4
-STA $02
-LDA $00
-LSR #4
-STA $00
+STA $02					; block y-index
+
+LDA $5B
+BIT #$0001
+BNE .vertical			; handle vertical levels differently
+
 LDA $00
 AND #$000F
 CLC
-ADC $04
-STA $04
+ADC $98
+STA $04					; block index in map16 table
 LDA $00
 LSR #4
 SEP #$20
@@ -229,7 +229,30 @@ LDA $4216
 ASL #4
 CLC
 ADC $04
+STA $04					; final equation: X = y_index + x_index[low] + x_index[high] * 0x1B
+BRA .injection
+
+.vertical
+LDA $00
+AND #$000F
 STA $04
+LDA $98
+AND #$00F0
+CLC
+ADC $04
+STA $04
+LDA $9A
+AND #$0100
+CLC
+ADC $04
+STA $04
+LDA $98
+AND #$FF00
+ASL
+CLC
+ADC $04
+STA $04					; final equation: X = x_index[low] + y_index[mid] + x_index[high] * 0x10 + y_index[high] * 0x200
+
 .injection
 JSR LoadTileNumber
 LDA $E4,x				; \ 
