@@ -17,153 +17,139 @@ db $20,$00,$20,$00,$18,$00,$12,$00,$1A,$00,$16,$00,$1A,$00,$16,$00	;1 small
 db $20,$00,$20,$00,$12,$00,$08,$00,$1A,$00,$0F,$00,$1A,$00,$0F,$00	;2 big
 
 Objects:
-LDA $0DB9
-AND #$04
-LSR
-STA $14BE			;set bit 2 of $14BE if in water last frame
-LDA #$04
-TRB $0DB9
-LDA #$40
-TRB $0F6A
-STZ $1933
-JSR TileTouches
-LDA $5B
-BPL .nolayer2
-JSR Layer2
-.nolayer2
-JSR WaterInteraction
-LDA $1588,x
-BIT #$04		;reset various addresses if touching ground
-BEQ .offtheground
-LDA #$01
-TRB $0F6A
-STZ $0F61
-BRA .ontheground
-.offtheground
-STZ $0F69
-.ontheground
-RTS
+		LDA $0DB9
+		AND #$04
+		LSR
+		STA $14BE			;set bit 2 of $14BE if in water last frame
+		LDA #$04
+		TRB $0DB9
+		LDA #$40
+		TRB $0F6A
+		STZ $1933
+		JSR TileTouches
+
+		LDA $5B
+		BPL +
+		JSR Layer2
+
+	+
+		JSR WaterInteraction
+		LDA $1588,x
+		BIT #$04		;reset various addresses if touching ground
+		BEQ .offtheground
+		LDA #$01
+		TRB $0F6A
+		STZ $0F61
+		BRA .ontheground
+
+	.offtheground
+		STZ $0F69
+	.ontheground
+		RTS
+
+GetL2Offsets:
+		LDA $5B
+		BIT #$02
+		BNE .vertical
+		LDA #$10
+		STA $00
+		STZ $01
+		RTS
+
+	.vertical
+		STZ $00
+		LDA #$0E
+		STA $01
+		RTS
 
 Layer2:
-INC $1933
-LDA $1403
-BNE .dol3
-REP #$20
-LDA $1E
-PHA
-STA $00
-LDA $20
-PHA
-STA $02
-BRA .finl3
-.dol3
-REP #$20
-LDA $22
-PHA
-STA $00
-LDA $24
-PHA
-STA $02
-.finl3
-SEP #$20
-LDA $1588,x
-PHA
-STZ $1588,x
-LDA $14E0,x
-XBA
-LDA $E4,x
-REP #$20
-SEC
-SBC $1A
-CLC
-ADC $00
-SEP #$20
-STA $E4,x
-XBA
-CLC
-ADC #$10		;forward 10 screens
-STA $14E0,x
-LDA $14D4,x
-XBA
-LDA $D8,x
-REP #$20
-SEC
-SBC $1C
-CLC
-ADC $02
-SEP #$20
-STA $D8,x
-XBA
-STA $14D4,x
-JSR TileTouches			;layer 2 interaction
-LDA $1588,x
-STA $00
-PLA
-ORA $00
-STA $1588,x
-LDA $00
-ASL #4
-ORA $1588,x
-STA $1588,x
+		INC $1933
+		LDA $1588,x		; Save and zero the touch-direction flags
+		PHA			; They'll be OR'd with the values that come out of the new interaction
+		STZ $1588,x
 
-REP #$20
-PLA
-STA $02
-PLA
-STA $00
-SEP #$20
+		JSR GetL2Offsets	; Set $00 and $01 to be the high-byte offsets
+		LDA $E4,x		; Move sprite's position to be on top of the layer 2 tiles
+		CLC
+		ADC $26
+		STA $E4,x
+		LDA $14E0,x
+		ADC $27
+		CLC
+		ADC $00
+		STA $14E0,x
+		LDA $D8,x
+		CLC
+		ADC $28
+		STA $D8,x
+		LDA $14D4,x
+		ADC $29
+		CLC
+		ADC $01
+		STA $14D4,x
 
-LDA $14D4,x
-XBA
-LDA $D8,x
-REP #$20
-SEC
-SBC $02
-CLC
-ADC $1C
-SEP #$20
-STA $D8,x
-XBA
-STA $14D4,x
+		JSR TileTouches		; Do the interaction for layer 2 now
 
-LDA $14E0,x
-XBA
-LDA $E4,x
-REP #$20
-SEC
-SBC $00
-CLC
-ADC $1A
-SEP #$20
-STA $E4,x
-XBA
-SEC
-SBC #$10
-STA $14E0,x
+		JSR GetL2Offsets
+		LDA $E4,x		; Restore sprite's position
+		SEC
+		SBC $26
+		STA $E4,x
+		LDA $14E0,x
+		SBC $27
+		SEC
+		SBC $00
+		STA $14E0,x
+		LDA $D8,x
+		SEC
+		SBC $28
+		STA $D8,x
+		LDA $14D4,x
+		SBC $29
+		SEC
+		SBC $01
+		STA $14D4,x
 
-LDA $1588,x
-BIT #$C0
-BEQ .notobot
-STZ $01
-LDA $17BE
-EOR #$FF
-INC
-STA $00
-BPL +
-DEC $01
-+
-LDA $14D4,x
-XBA
-LDA $D8,x
-REP #$20
-CLC
-ADC $00
-SEP #$20
-STA $D8,x
-XBA
-STA $14D4,x
-.notobot
-RTS
+		LDA $1588,x
+		ASL #4
+		ORA $1588,x
+		STA $00
+		PLA
+		ORA $00
+		STA $1588,x
+
+		LDA $1588,x
+		BIT #$C0
+		BEQ .notobot
+
+		REP #$20			; We're standing on layer 2. Update position accordingly.
+		LDA $1E
+		SEC
+		SBC $1466
+		STA $00
+		LDA $20
+		SEC
+		SBC $1468
+		STA $02
+		SEP #$20
+
+		LDA $E4,x
+		CLC
+		ADC $00
+		STA $E4,x
+		LDA $14E0,x
+		ADC $01
+		STA $14E0,x
+
+		LDA $D8,x
+		CLC
+		ADC $02
+		STA $D8,x
+		LDA $14D4,x
+		ADC $03
+		STA $14D4,x
+	.notobot
+		RTS
 
 
 TileTouches:
