@@ -119,17 +119,25 @@ Layer2:
 		STA $1588,x
 
 		LDA $1588,x
-		BIT #$C0
+		BIT #$40
 		BEQ .notobot
 
 		REP #$20			; We're standing on layer 2. Update position accordingly.
 		LDA $1E
 		SEC
 		SBC $1466
+		SEC
+		SBC $1A
+		CLC
+		ADC $1462
 		STA $00
 		LDA $20
 		SEC
 		SBC $1468
+		SEC
+		SBC $1C
+		CLC
+		ADC $1464
 		STA $02
 		SEP #$20
 
@@ -141,13 +149,16 @@ Layer2:
 		ADC $01
 		STA $14E0,x
 
-		LDA $D8,x
-		CLC
-		ADC $02
-		STA $D8,x
-		LDA $14D4,x
-		ADC $03
-		STA $14D4,x
+		;LDA $D8,x
+		;CLC
+		;ADC $02
+		;STA $D8,x
+		;LDA $14D4,x
+		;ADC $03
+		;STA $14D4,x
+
+		LDA #$10
+		STA $AA,x
 	.notobot
 		RTS
 
@@ -1236,7 +1247,9 @@ JMP .rightsidesolid
 CMP #$06
 BCS .rightsidesolidjmp
 LDA $B6,x
+BEQ ++
 BPL +
+++
 LDA $E4,x
 AND #$F0
 CLC
