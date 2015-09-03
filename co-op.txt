@@ -157,7 +157,7 @@ List D: TODOs
 -Names in life swap/scorecard
 -Fix SB and SC tail positioning for runjump/firejump - DONE
 -Do something about title sequence
--Expanding/shrinking turnblocks in Iggy castle
+-Expanding/shrinking turnblocks in Iggy castle - DONE
 -L3 crushers
 -Swinging Platforms: more than one at once
 -Add few frames of foot pedaling in midair
@@ -170,3 +170,16 @@ List D: TODOs
 -comment hijacks in afterthoughts/simjack
 -Coin game cloud interaction
 -Add global sprite state for "carried by p2", or something equally absurd
+-Triple-arm rotating platforms
+-Enemies need to hate both players equally
+--boo
+--yellow koopa
+-Make sure slowdown isn't dumb and easily fixable
+-Dry bones
+-Escalators
+-Make screen scroll trigger on p2 climbing/sprinting
+-Players die when they go off the bottom of the screen in vertical levels
+-Disable p1 cape powers I hate
+-Friction on checkerboard platforms
+-Podobo graphics
+-Climbing frame is wrong?? who did this
