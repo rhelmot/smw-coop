@@ -35,7 +35,7 @@ TXA
 CLC
 ADC #$0C
 TAX
-JSR UpdatePosY
+JSR UpdatePosY 
 LDX $0F65
 RTS
 
