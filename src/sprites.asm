@@ -476,7 +476,7 @@ DW Sprite0E
 DW Sprite0F
 DW Sprite10
 DW Sprite11
-DW Sprite14
+DW Sprite12
 DW Sprite41
 DW Sprite41
 DW Sprite4F
@@ -929,11 +929,73 @@ RTS
 Sprite0E:;Key Hole
 RTS
 
+GoombaWins:
+JSR HurtLuigi
+RTS
+
 Sprite0F:;Goomba
+LDA $1570,x
+BEQ $03
+JMP KillWithStar
+LDA $14C8,y
+CMP #$09
+BNE GoombaReg
+akakakakaka:
+JMP GoombaShell
+GoombaReg:
+LDA #$00
+JSR LocateContact
+BEQ GoombaWins
 LDA $0DB9
-BIT #$00
-BEQ NoSpinGoomba
-NoSpinGoomba:
+BIT #$01
+BEQ Labelname23
+JMP SpinKillGoomba
+Labelname23:
+LDA $14C8,y;bonk by jump
+CMP #$0A
+BNE Labelname24
+JMP KickedShellGoomba;jump if kicked
+Labelname24:
+LDA #$00
+STA $00B6,y
+REP #$20
+LDA #$FFFC
+JSR AddToYpos
+;STX $0F
+TYX
+JMP Labelname22
+RTS
+GoombaGo:
+LDA #$10
+STA $1564,Y
+STA $154C,Y
+LDA $164A,X
+STA $164A,Y
+STZ $1540,X
+PHX
+PHY
+Labelname22:
+TXY
+LDX $15E9
+;LDA #$00
+;STA $00B6,y
+KickedShellGoomba:
+LDA #$09
+JSR BounceSquash
+RTS
+
+SpinKillGoomba:
+JSR SpinKillSprite
+RTS
+
+GoombaShell:
+LDA $0DB9
+BIT #$01
+BEQ NoSpinGoombaShell
+LDA #$00
+JSR LocateContact
+BNE SpinKillGoomba
+NoSpinGoombaShell:
 LDA $0DA3
 ORA $0DA5
 BIT #$40
@@ -949,50 +1011,155 @@ STA $154C,x
 RTS
 NoXYGoomba:
 LDA $0DB9
-BPL KickGoomba
+BPL KickGoombaShellLR
 JSR UpdatePosByCarry
 JSR LetGo
 RTS
-KickGoomba:
-LDA $0F6A
-AND #$10
-LDA $0F6A
-AND #$10
-LSR #4
-AND #$01
-CMP $1632,y
-LDA $1570,x
-BEQ $03
-JMP KillWithStar
-LDA #$00
-JSR LocateContact
-BEQ GoombaWin
-LDA $0DB9
-AND #$01
-BNE GoombaSpinKill
-;JSL $01AB99
-LDA #$00
-STA $00AA,y
-STA $00B6,y
-LDA #$02
-JSR LetGo
-JSR BounceNoSquash
+KickGoombaShellLR:
+JSR SubHorzPosLuigi
+PHX
+TYX
+LDY $0F
+LDA.w LaunchGoombaShellSpeeds,y
+STA $B6,x
+LDA #$0A
+STA $14C8,x
+LDA #$08
+STA $154C,x
+TXY
+PLX
+LDA #$80
+TRB $0DB9
+LDA #$13
+STA $1DF9
 RTS
-GoombaSpinKill:
-JSR SpinKillSprite
+
+GoombaReturn:
 RTS
-GoombaWin:
-JSR HurtLuigi
-RTS
-RTS
+
+LaunchGoombaSpeeds:
+db $20,$E0
+LaunchGoombaShellSpeeds:
+db $30,$D0
 
 Sprite10:;Jumping Goomba
 JSR Sprite91
 RTS
 
-Sprite11:;Buzzy Beetle
-JSR Sprite0F
+BuzzyWins:
+JSR HurtLuigi
 RTS
+
+Sprite11:;Buzzy Beetle
+LDA $1570,x
+BEQ $03
+JMP KillWithStar
+LDA $14C8,y
+CMP #$09
+BNE BuzzyReg
+akakakaka:
+JMP BuzzyShell
+BuzzyReg:
+LDA #$00
+JSR LocateContact
+BEQ BuzzyWins
+LDA $0DB9
+BIT #$01
+BEQ Labelname20
+JMP SpinKillBuzzy
+Labelname20:
+LDA $14C8,y;bonk by jump
+CMP #$0A
+BNE Labelname21
+JMP KickedShellBuzzy;jump if kicked
+Labelname21:
+LDA #$00
+STA $00B6,y
+REP #$20
+LDA #$FFFC
+JSR AddToYpos
+;STX $0F
+TYX
+JMP Labelname19
+RTS
+BuzzyGo:
+LDA #$10
+STA $1564,Y
+STA $154C,Y
+LDA $164A,X
+STA $164A,Y
+STZ $1540,X
+PHX
+PHY
+Labelname19:
+TXY
+LDX $15E9
+;LDA #$00
+;STA $00B6,y
+KickedShellBuzzy:
+LDA #$09
+JSR BounceSquash
+RTS
+
+SpinKillBuzzy:
+JSR SpinKillSprite
+RTS
+
+BuzzyShell:
+LDA $0DB9
+BIT #$01
+BEQ NoSpinBuzzyShell
+LDA #$00
+JSR LocateContact
+BNE SpinKillBuzzy
+NoSpinBuzzyShell:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYBuzzy
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+RTS
+NoXYBuzzy:
+LDA $0DB9
+BPL KickBuzzyShellLR
+JSR UpdatePosByCarry
+JSR LetGo
+RTS
+KickBuzzyShellLR:
+JSR SubHorzPosLuigi
+PHX
+TYX
+LDY $0F
+LDA.w LaunchBuzzyShellSpeeds,y
+STA $B6,x
+LDA #$0A
+STA $14C8,x
+LDA #$08
+STA $154C,x
+LDA #$01
+JSL $02ACE5
+TXY
+PLX
+LDA #$80
+TRB $0DB9
+LDA #$13
+STA $1DF9
+RTS
+
+BuzzyReturn:
+RTS
+
+LaunchBuzzySpeeds:
+db $20,$E0
+LaunchBuzzyShellSpeeds:
+db $30,$D0
 
 Sprite12:;??????????
 RTS
@@ -2225,6 +2392,9 @@ JSR HurtLuigi
 RTS
 
 Sprite74:;Mushroom
+LDA #$0B                ;sets game mode to exit level
+	STA $0100        		
+	JML $00A289
 LDA #$00
 STA $14C8,y
 LDA #$0A
@@ -2804,44 +2974,7 @@ JSR Sprite70
 RTS
 
 SpriteA2:;Mecha koopas
-LDA $0DB9
-BIT #$00
-BEQ NoSpinMecha
-NoSpinMecha:
-LDA $0DA3
-ORA $0DA5
-BIT #$40
-BEQ NoXYMecha
-JSR UpdatePosByCarry
-LDA $0DB9
-BMI +
-LDA #$80
-TSB $0DB9
-LDA #$08
-STA $154C,x
-+
-RTS
-NoXYMecha:
-LDA $0DB9
-BPL KickMecha
-JSR LetGo
-RTS
-KickMecha:
-LDA $0F6A
-AND #$10
-LDA $0F6A
-AND #$10
-LSR #4
-AND #$01
-CMP $1632,y
-JSR Sprite91
-JSR LetGo
-RTS
-MechaSpinKill:
-JSR SpinKillSprite
-RTS
-MechaWin:
-JSR HurtLuigi
+JSR Sprite0F
 RTS
 
 SpriteA3:;Grey Plataform on chain
