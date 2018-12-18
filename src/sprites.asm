@@ -2392,9 +2392,6 @@ JSR HurtLuigi
 RTS
 
 Sprite74:;Mushroom
-LDA #$0B                ;sets game mode to exit level
-	STA $0100        		
-	JML $00A289
 LDA #$00
 STA $14C8,y
 LDA #$0A
