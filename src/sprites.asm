@@ -1,6 +1,6 @@
 Sprites:
-LDX #$0B		;Load # of sprites
-INTRLOOP:					;Loopstart above get-self-clipping so moar scratch ram can be used
+LDX #$0B;Load # of sprites
+INTRLOOP:;Loopstart above get-self-clipping so moar scratch ram can be used
 CPX $0F65
 BEQ NEXTSPR
 LDA $14C8,x
@@ -8,7 +8,7 @@ CMP #$08
 BCC NEXTSPR
 LDA $154C,x
 BNE NEXTSPR
-JSL $83B69F		;get clipping for client sprite
+JSL $83B69F;get clipping for client sprite
 LDA $9E,x
 CMP #$5F
 BNE +
@@ -37,7 +37,7 @@ BRA ++
 +
 ++
 JSR ClipWithMe
-BCC NEXTSPR		;if no contact, continue loop
+BCC NEXTSPR;if no contact, continue loop
 LDA $0DB9
 BIT #$40
 BEQ +
@@ -49,17 +49,17 @@ PLA
 LSR #4
 STA $0EF9
 +
-TXY			;client sprite index to Y
-JSR SPRITE_INTERACT	;interact
-TYX			;client back to X
+TXY;client sprite index to Y
+JSR SPRITE_INTERACT;interact
+TYX;client back to X
 NEXTSPR:
-DEX			;next sprite
-BPL INTRLOOP		;If done, end
+DEX;next sprite
+BPL INTRLOOP;If done, end
 INTREND:
 LDX $0F65
 RTS
 
-ClipWithMe:		;Uses: $00,$01,$02,$03,$08,$09
+ClipWithMe:;Uses: $00,$01,$02,$03,$08,$09
 PHX
 LDX $0F65
 JSR GetHeight
@@ -76,7 +76,7 @@ SBC.w .tentwenty,y
 STA $01                   ; $01 = (Sprite Y position + displacement) Low byte
 LDA $14D4,x
 SBC #$00
-STA $09			  ; $09 = (Sprite Y position + displacement) High byte
+STA $09  ; $09 = (Sprite Y position + displacement) High byte
 LDA.w .negtentwenty,y                  ; $03 = Clipping height
 STA $03
 JSL $83B72B
@@ -181,7 +181,7 @@ LDA #$10
 STA $07
 RTS
 
-RotPlatClip:				;here's hoping this works!
+RotPlatClip:;here's hoping this works!
 LDA $151C,X
 STA $01
 LDA $1602,X
@@ -258,14 +258,14 @@ DEC $00
 CLC
 ADC $E4,X
 STA $E4,X
-; PHP
-; PHA
-; SEC
-; SBC $1534,X
-; STA $1528,X
-; PLA
-; STA $1534,X
-; PLP
+PHP
+PHA
+SEC
+SBC $1534,X
+STA $1528,X
+PLA
+STA $1534,X
+PLP
 LDA $14E0,X
 ADC $00
 STA $14E0,X
@@ -291,26 +291,171 @@ PLA
 STA $E4,x
 RTS
 
+DATA_01E6FD:
+db $00,$02,$00
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; SPRITE_INTERACT
-;
-; Oh, lovely, I get to code interaction with EVERY SINGLE ****ING SPRITE IN THE GAME
-; :(
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Jump:
+JSR SolidSprite
+BPL .SpringJump
+LDA $0F6A
+BIT #$04
+BNE .end
+LDA $0DB9
+BMI .SpringJump
+LDA #$01
+TSB $0DB9
+LDA #$22
+TRB $0DB9
+LDA #$04
+STA $1DFC
+INX
+BRA +
+.SpringJump
+LDA #$09
+TRB $0F6A
+LDA #$08                ; \ Play sound effect
+STA $1DFC 
++
+LDA $00D2BD,x
+LDX $0F65
+STA $AA,x
+INC $0F64
+.end
+LDX $0F65
+RTS
+
+JumpNoSquash:;JUMP NO MATANDO SPRITES
+JSR SolidSprite
+BPL .normaljump
+LDA $0F6A
+BIT #$04
+BNE .end
+LDA $0DB9
+BMI .normaljump
+LDA #$01
+TSB $0DB9
+LDA #$22
+TRB $0DB9
+LDA #$04
+STA $1DFC
+INX
+BRA +
+.normaljump
+LDA #$09
+TRB $0F6A
+LDA #$00                ; \ Play sound effect
+STA $1DFC 
++
+LDA $00D2BD,x
+LDX $0F65
+STA $AA,x
+INC $0F64
+.end
+LDX $0F65
+RTS
+
+BounceSolid:;Bounce!
+LDA $0F6A
+AND #$10
+LDA $0F6A
+AND #$10
+LSR #4
+AND #$01
+CMP $1632,y
+LDA $1570,x
+LDA #$00
+JSR LocateContact
+BEQ BounceSolidWin
+LDA $0DB9
+AND #$01
+BNE BounceSolidSpinKill
+LDA #$00
+STA $00AA,y
+STA $00B6,y
+LDA #$02
+JSR Jump
+RTS
+BounceSolidSpinKill:
+JSR SolidSprite
+RTS
+BounceSolidWin:
+JSR SolidSprite
+RTS
+
+BounceNoSquash:;Bounce sin matar sprites!
+LDA $0F6A
+AND #$10
+LDA $0F6A
+AND #$10
+LSR #4
+AND #$01
+CMP $1632,y
+LDA $1570,x
+LDA #$00
+JSR LocateContact
+BEQ BounceNoSquashWin
+LDA $0DB9
+AND #$01
+BNE BounceNoSquashSpinKill
+LDA #$00
+STA $00AA,y
+STA $00B6,y
+LDA #$02
+JSR JumpNoSquash
+RTS
+BounceNoSquashSpinKill:
+JSR SolidSprite
+RTS
+BounceNoSquashWin:
+JSR SolidSprite
+RTS
+
+BounceNoSolid:;Bounce!
+LDA $0F6A
+AND #$10
+LDA $0F6A
+AND #$10
+LSR #4
+AND #$01
+CMP $1632,y
+LDA $1570,x
+LDA #$00
+JSR LocateContact
+BEQ BounceNoSolidWin
+LDA $0DB9
+AND #$01
+BNE BounceNoSolidSpinKill
+LDA #$00
+STA $00AA,y
+STA $00B6,y
+LDA #$02
+JSR SuperBoostSpeed
+RTS
+BounceNoSolidSpinKill:
+RTS
+BounceNoSolidWin:
+RTS
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                                                                                   ;;
+;; SPRITE_INTERACT                                                                   ;;
+;;                                                                                   ;;
+;; Oh, lovely, I get to code interaction with EVERY SINGLE ****ING SPRITE IN THE GAME;;
+;; :(                                                                                ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SPRITE_INTERACT:
-LDA $009E,y		;\client sprite #
-REP #$30		; |set 16 bit A
-AND #$00FF		; |clear high byte
-ASL				; |double
+LDA $009E,y;\client sprite #
+REP #$30; |set 16 bit A
+AND #$00FF; |clear high byte
+ASL; |double
 TAX
 LDA.w Ptr,x
-STA $00			; |store to scratch
-SEP #$30		; |8 bit A
+STA $00; |store to scratch
+SEP #$30; |8 bit A
 LDX $0F65
-JMP ($0000)		;/Jump to correct interaction routine
+JMP ($0000);/Jump to correct interaction routine
 
 Ptr:
 DW Sprite00
@@ -519,7 +664,7 @@ DW SpriteCA
 
 
 
-Sprite00:		;Shelless green koopa and others
+Sprite00:;Shelless green koopa and others
 LDA $1570,x
 ORA $163E,y
 BEQ +
@@ -547,17 +692,17 @@ GreenWins:
 JSR HurtLuigi
 RTS
 
-			;Red shelless koopa = green shelless koopa
+;Red shelless koopa = green shelless koopa
 
-			;blue shelless koopa = green shelless koopa
+;blue shelless koopa = green shelless koopa
 
-			;yellow shelless koopa = green shelless koopa
+;yellow shelless koopa = green shelless koopa
 
 GKoopaWins:
 JSR HurtLuigi
 RTS
 
-Sprite04:		;green koopa
+Sprite04:;green koopa
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
@@ -575,10 +720,10 @@ BIT #$01
 BEQ Labelname8
 JMP SpinKillGreenKoopa
 Labelname8:
-LDA $14C8,y		;bonk by jump
+LDA $14C8,y;bonk by jump
 CMP #$0A
 BNE Labelname9
-JMP KickedShellG	;jump if kicked
+JMP KickedShellG;jump if kicked
 Labelname9:
 LDA #$00
 STA $00B6,y
@@ -587,31 +732,31 @@ LDA #$FFFC
 JSR AddToYpos
 ;STX $0F
 TYX
-JSL $02A9DE		;\Get sprite slot to y
-BPL GKoopaGo		;/if none, return
+JSL $02A9DE;\Get sprite slot to y
+BPL GKoopaGo;/if none, return
 JMP Labelname7
 RTS
 GKoopaGo:
 LDA #$08                ; \ Sprite status = Normal
 STA $14C8,Y             ; /
 PHX
-LDA $9E,X       	; \ Store sprite number for shelless koopa
+LDA $9E,X       ; \ Store sprite number for shelless koopa
 TAX                     ;  |
-LDA $01961C,X 		;  |
-STA $009E,Y     	; /
+LDA $01961C,X ;  |
+STA $009E,Y     ; /
 TYX                     ; \ Reset sprite tables
-JSL $07F7D2    		;  |
-PLX	                ; /
-LDA $E4,X       	; \ Shelless Koopa position = Koopa position
-STA $00E4,Y     	;  |
-LDA $14E0,X     	;  |
-STA $14E0,Y     	;  |
-LDA $D8,X       	;  |
-STA $00D8,Y     	;  |
-LDA $14D4,X     	;  |
-STA $14D4,Y     	; /
+JSL $07F7D2    ;  |
+PLX                ; /
+LDA $E4,X       ; \ Shelless Koopa position = Koopa position
+STA $00E4,Y     ;  |
+LDA $14E0,X     ;  |
+STA $14E0,Y     ;  |
+LDA $D8,X       ;  |
+STA $00D8,Y     ;  |
+LDA $14D4,X     ;  |
+STA $14D4,Y     ; /
 LDA #$00                ; \ Direction = 0
-STA $157C,Y     	; /
+STA $157C,Y     ; /
 LDA #$10
 STA $1564,Y
 STA $154C,Y
@@ -737,10 +882,10 @@ db $20,$E0
 LaunchShellSpeeds:
 db $30,$D0
 
-			;other koopas = green koopa
+;other koopas = green koopa
 
 Sprite08:
-Sprite09:		;winged koopas
+Sprite09:;winged koopas
 Sprite0A:
 Sprite0B:
 Sprite0C:
@@ -777,60 +922,321 @@ RTS
 .koopanumbers
 db $04,$04,$05,$05,$07
 
-Sprite0D:		;keyhole
+Sprite0D:;Bob-omb
+JSR Sprite0F
 RTS
 
-Sprite0E:
+Sprite0E:;Key Hole
 RTS
 
-Sprite0F:
+GoombaWins:
+JSR HurtLuigi
 RTS
 
-Sprite10:
+Sprite0F:;Goomba
+LDA $1570,x
+BEQ $03
+JMP KillWithStar
+LDA $14C8,y
+CMP #$09
+BNE GoombaReg
+akakakakaka:
+JMP GoombaShell
+GoombaReg:
+LDA #$00
+JSR LocateContact
+BEQ GoombaWins
+LDA $0DB9
+BIT #$01
+BEQ Labelname23
+JMP SpinKillGoomba
+Labelname23:
+LDA $14C8,y;bonk by jump
+CMP #$0A
+BNE Labelname24
+JMP KickedShellGoomba;jump if kicked
+Labelname24:
+LDA #$00
+STA $00B6,y
+REP #$20
+LDA #$FFFC
+JSR AddToYpos
+;STX $0F
+TYX
+JMP Labelname22
+RTS
+GoombaGo:
+LDA #$10
+STA $1564,Y
+STA $154C,Y
+LDA $164A,X
+STA $164A,Y
+STZ $1540,X
+PHX
+PHY
+Labelname22:
+TXY
+LDX $15E9
+;LDA #$00
+;STA $00B6,y
+KickedShellGoomba:
+LDA #$09
+JSR BounceSquash
 RTS
 
-Sprite11:
+SpinKillGoomba:
+JSR SpinKillSprite
 RTS
 
-Sprite12:
+GoombaShell:
+LDA $0DB9
+BIT #$01
+BEQ NoSpinGoombaShell
+LDA #$00
+JSR LocateContact
+BNE SpinKillGoomba
+NoSpinGoombaShell:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYGoomba
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+RTS
+NoXYGoomba:
+LDA $0DB9
+BPL KickGoombaShellLR
+JSR UpdatePosByCarry
+JSR LetGo
+RTS
+KickGoombaShellLR:
+JSR SubHorzPosLuigi
+PHX
+TYX
+LDY $0F
+LDA.w LaunchGoombaShellSpeeds,y
+STA $B6,x
+LDA #$0A
+STA $14C8,x
+LDA #$08
+STA $154C,x
+TXY
+PLX
+LDA #$80
+TRB $0DB9
+LDA #$13
+STA $1DF9
 RTS
 
-		;Horizontal/vertical fish = jumping pirannah (sprite 4F)
-
-		;Hopping fish/generated fish = jumping fish (sprite 47)
-
-Sprite19:
+GoombaReturn:
 RTS
 
-Sprite1B:
+LaunchGoombaSpeeds:
+db $20,$E0
+LaunchGoombaShellSpeeds:
+db $30,$D0
+
+Sprite10:;Jumping Goomba
+JSR Sprite91
 RTS
 
-Sprite1C:
+BuzzyWins:
+JSR HurtLuigi
 RTS
 
-Sprite1E:
+Sprite11:;Buzzy Beetle
+LDA $1570,x
+BEQ $03
+JMP KillWithStar
+LDA $14C8,y
+CMP #$09
+BNE BuzzyReg
+akakakaka:
+JMP BuzzyShell
+BuzzyReg:
+LDA #$00
+JSR LocateContact
+BEQ BuzzyWins
+LDA $0DB9
+BIT #$01
+BEQ Labelname20
+JMP SpinKillBuzzy
+Labelname20:
+LDA $14C8,y;bonk by jump
+CMP #$0A
+BNE Labelname21
+JMP KickedShellBuzzy;jump if kicked
+Labelname21:
+LDA #$00
+STA $00B6,y
+REP #$20
+LDA #$FFFC
+JSR AddToYpos
+;STX $0F
+TYX
+JMP Labelname19
+RTS
+BuzzyGo:
+LDA #$10
+STA $1564,Y
+STA $154C,Y
+LDA $164A,X
+STA $164A,Y
+STZ $1540,X
+PHX
+PHY
+Labelname19:
+TXY
+LDX $15E9
+;LDA #$00
+;STA $00B6,y
+KickedShellBuzzy:
+LDA #$09
+JSR BounceSquash
 RTS
 
-Sprite1F:
+SpinKillBuzzy:
+JSR SpinKillSprite
 RTS
 
-Sprite20:
+BuzzyShell:
+LDA $0DB9
+BIT #$01
+BEQ NoSpinBuzzyShell
+LDA #$00
+JSR LocateContact
+BNE SpinKillBuzzy
+NoSpinBuzzyShell:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYBuzzy
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+RTS
+NoXYBuzzy:
+LDA $0DB9
+BPL KickBuzzyShellLR
+JSR UpdatePosByCarry
+JSR LetGo
+RTS
+KickBuzzyShellLR:
+JSR SubHorzPosLuigi
+PHX
+TYX
+LDY $0F
+LDA.w LaunchBuzzyShellSpeeds,y
+STA $B6,x
+LDA #$0A
+STA $14C8,x
+LDA #$08
+STA $154C,x
+LDA #$01
+JSL $02ACE5
+TXY
+PLX
+LDA #$80
+TRB $0DB9
+LDA #$13
+STA $1DF9
 RTS
 
-Sprite21:
+BuzzyReturn:
+RTS
+
+LaunchBuzzySpeeds:
+db $20,$E0
+LaunchBuzzyShellSpeeds:
+db $30,$D0
+
+Sprite12:;??????????
+RTS
+
+Sprite14:;Falling Spiny
+RTS
+
+;Horizontal/vertical fish = jumping pirannah (sprite 4F)
+
+;Hopping fish/generated fish = jumping fish (sprite 47)
+
+Sprite19:;Display Message Text
+RTS
+
+Sprite1B:;Bouncing football
+JSR Sprite1C
+RTS
+
+Sprite1C:;Bullet bill
+LDA $0F6A
+AND #$10
+LDA $0F6A
+AND #$10
+LSR #4
+AND #$01
+CMP $1632,y
+LDA $1570,x
+BEQ $03
+JMP KillWithStar
+LDA #$00
+JSR LocateContact
+BEQ BulletWin
+LDA $0DB9
+AND #$01
+BNE BulletSpinKill
+;JSL $01AB99
+LDA #$00
+STA $00AA,y
+STA $00B6,y
+LDA #$02
+JSR BounceSquash
+RTS
+BulletSpinKill:
+JSR SpinKillSprite
+RTS
+BulletWin:
+JSR HurtLuigi
+RTS
+
+Sprite1E:;Lakitu
+JSR Sprite1C
+RTS
+
+Sprite1F:;Magikoopa
+JSR Sprite1C
+RTS
+
+Sprite20:;Magikoopa Magic
+RTS
+
+Sprite21:;Moving Coin
 LDA $0DBF
 CMP #$63
 BEQ NoGiveCoin
-INC $0DBF
 NoGiveCoin:
 LDA #$01
 STA $1DFC
 LDA #$00
 STA $14C8,y
+LDA #$01
+JSL $02ACE5
+JSR BlockSparkle
+JSL $05B34A			;+1 coin
 RTS
 
 Sprite22:
-Sprite23:		;Net koopas
+Sprite23:;Net koopas
 Sprite24:
 Sprite25:
 LDA $0F6A
@@ -844,88 +1250,275 @@ BEQ $03
 JMP KillWithStar
 LDA #$00
 JSR LocateContact
-BEQ .koopaWins
-LDA #$02
-JSR BounceSquash
+BEQ NetKoopaWin
+LDA $0DB9
+AND #$01
+BNE NetKoopaSpinKill
 LDA #$00
 STA $00AA,y
 STA $00B6,y
+LDA #$02
+JSR BounceSquash
 RTS
-
-.koopaWins
-JSR HurtLuigi
 .return
 RTS
-
-			;thwonp + thwimp = jumping piranah
-
-Sprite28:
+NetKoopaSpinKill:
+JSR SpinKillSprite
+RTS
+NetKoopaWin:
+JSR HurtLuigi
 RTS
 
-Sprite29:
+
+;thwonp + thwimp = jumping piranah
+
+Sprite28:;Big Boo
 RTS
 
-Sprite2A:		;upside down piranah plant
+Sprite29:;Koopaling
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
-JSL HurtLuigi
+LDA #$00
+JSR LocateContact;\if the chuck wins
+BEQ KoopalingWins;/hurt player
+JSR BoostSpeed
+LDA #$02;\bounce sound
+STA $1DF9;/
+JSR Sprite1C
+JSR Sprite4A
+LDA $00C2,y;\if stunned
+INC; |
+STA $1528,y;/
+CMP #$01;\if three, kill
+BEQ KillKoopaling;/
+
+LDA #$28                ;\ Play sound effect ;From chuck dissasembly
+STA $1DFC               ;/
+LDA #$00
+JSR KillKoopaling
+PHY
+LDA KoopalingBounceXsp,Y
+PLY
+STA $00B6,x
 RTS
 
-Sprite2B:
+KillKoopaling:
+LDA #$02
+STA $14D1,y
+KoopalingBounce:
 RTS
 
-Sprite2C:
+KoopalingWins:
+JSR HurtLuigi
 RTS
 
-Sprite2D:
+KoopalingBounceXsp:
+db $20,$E0
 RTS
 
-Sprite2E:
+Sprite2A:;upside down pirannah plant
+JSR Sprite4F
 RTS
 
-Sprite2F:
+Sprite2B:;Sumo Brother Ligth
+JSR Sprite4F
 RTS
 
-Sprite30:
+Sprite2C:;Yoshi egg
 RTS
 
-Sprite31:
+Sprite2D:;Baby Green Yoshi
+LDA $0DB9
+BIT #$00
+BEQ NoSpinegg
+NoSpinegg:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYegg
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+RTS
+NoXYegg:
+LDA $0DB9
+BPL Kickegg
+JSR UpdatePosByCarry
+JSR LetGo
+RTS
+Kickegg:
+JSR SolidSprite
+JSR SubHorzPosLuigi
+PHX
+TYX
+LDY $0F
+LDA.w LaunchShellSpeeds,y
+STA $B6,x
+LDA #$0A
+STA $154C,x
+TXY
+PLX
+LDA #$80
+TRB $0DB9
+LDA #$13
+STA $1DF9
+RTS
 RTS
 
-Sprite32:
+Sprite2E:;Spike top
 RTS
 
-			;jumping + boss fireballs = jumping pirranah
-
-Sprite35:		;Yoshi
+Sprite2F:;SpringBoard
+JSR BounceNoSolid
+BEQ NoSpinSpring
+NoSpinSpring:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYSpring
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+BEQ NoXYSpring
+JSR UpdatePosByCarry
+RTS
+NoXYSpring:
+LDA $0DB9
+BPL KickSpring
+JSR UpdatePosByCarry
+JSR LetGo
+RTS
+KickSpring:
+JSR SolidSprite
 RTS
 
-Sprite36:
+Sprite30:;DrybonesTrowbones
+LDA $0F6A
+AND #$10
+LDA $0F6A
+AND #$10
+LSR #4
+AND #$01
+CMP $1632,y
+LDA $1570,x
+BEQ $03
+JMP KillWithStar
+LDA #$00
+JSR LocateContact
+BEQ DryBonesWin
+LDA $0DB9
+AND #$01
+BNE DryBonesSpinKill
+;JSL $01AB99
+LDA #$00
+STA $00AA,y
+STA $00B6,y
+LDA #$02
+JSR KillDryBones
+RTS
+DryBonesSpinKill:
+JSR SpinKillSprite
+RTS
+DryBonesWin:
+JSR HurtLuigi
+RTS
+KillDryBones:
+JSR KillNoSound
+LDA #$07
+STA $1DF9
 RTS
 
-Sprite37:
+Sprite31:;Bony
+JSR Sprite30
 RTS
 
-Sprite38:
+Sprite32:;Drybones
+JSR Sprite30
 RTS
 
-Sprite39:
+;jumping + boss fireballs = jumping pirranah
+
+Sprite35:;Yoshi
+LDA $0DB9
+BIT #$00
+BEQ NoSpinYoshi
+NoSpinYoshi:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYYoshi
+JSR UpdatePosByCarry
+LDA $0DB9
++
+RTS
+NoXYYoshi:
+BPL KickYoshi
+JSR UpdatePosByCarry
+RTS
+KickYoshi:
+JSR Sprite53
 RTS
 
-Sprite3A:
+Sprite36:;??????????
 RTS
 
-Sprite3B:
+Sprite37:;Boo
 RTS
 
-Sprite3C:
+Sprite38:;Eerie
 RTS
 
-Sprite3D:
+Sprite39:;Eerie Wave Motion
 RTS
 
-Sprite3E:			;P-switch
+Sprite3A:;Urchin Fixed Vertical/Horizontal
+RTS
+
+Sprite3B:;Urchin Wall Detect Vertical/Horizontal
+RTS
+
+Sprite3C:;Urchin Wall Follow counter
+RTS
+
+Sprite3D:;Rip Van Fish
+RTS
+
+Sprite3E:;P-switch
+LDA $0DB9
+BIT #$00
+BEQ NoSpinPS
+NoSpinPS:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYPS
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+RTS
+NoXYPS:
+LDA $0DB9
+BPL KickPS
+JSR UpdatePosByCarry
+JSR LetGo
+RTS
+KickPS:
 JSR SolidSprite
 CMP #$01
 BNE .end
@@ -942,39 +1535,50 @@ LDA $151C,y
 BNE .SilverP
 LDA #$FF
 STA $14AD
+LDA #$20
+STA $1887			; Set earthquake timer
 RTS
 .SilverP
 LDA #$FF
 STA $14AE
+LDA #$20
+STA $1887			; Set earthquake timer
 .end
 RTS
-
-Sprite3F:
 RTS
 
-Sprite40:
+Sprite3F:;Para Goomba
+JSR Sprite91
 RTS
 
-Sprite41:
+Sprite40:;Para Bomb
+JSR Sprite91
 RTS
 
-Sprite42:
+Sprite41:;Dolphin Long Jump Horizontal/Spiny's sprite 13-14
+JSR Sprite4F
 RTS
 
-Sprite43:
+Sprite42:;Dolphin Short Jump Horizontal
+JSR Sprite55
 RTS
 
-Sprite44:
+Sprite43:;Dolphin Jump Vertical
+JSR Sprite55
 RTS
 
-Sprite45:
+Sprite44:;Torpedo ted
+JSR Sprite4F
 RTS
 
-			;diggin' chuck = chargin' chuck
+Sprite45:;Directional Coins
+RTS
 
-			;diggin' chuck's rock (48) = jumping pirannah
+;diggin' chuck = chargin' chuck
 
-Sprite47:
+;diggin' chuck's rock (48) = jumping pirannah
+
+Sprite47:;Swimming Jumping Fish
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
@@ -998,20 +1602,28 @@ JSR HurtLuigi
 .end
 RTS
 
-Sprite49:
+Sprite49:;Growing Pipe
+JSR SolidSprite
 RTS
 
-Sprite4A:
+Sprite4A:;Goal Point Sphere
+LDY #$0C
+TYX
+JSL EndLevel
+LDX $0F65
+.end
 RTS
 
-Sprite4B:
+Sprite4B:;Pipe Lakitu
+JSR Sprite1C
 RTS
 
-Sprite4C:
+Sprite4C:;Exploding Block, Fish/Goomba/Koopa/Sheless Koopa
+JSR SolidSprite
 RTS
 
 Sprite4D:
-Sprite4E:		;Monty Moles
+Sprite4E:;Monty Moles
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
@@ -1042,7 +1654,7 @@ RTS
 .end
 RTS
 
-Sprite4F:		;Jumping Pirannah
+Sprite4F:;Jumping Pirannah
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
@@ -1083,21 +1695,24 @@ LDA #$02
 STA $1DF9
 RTS
 
-			;SpitFire Jumping Pirannah = Jumping pirannah
+;SpitFire Jumping Pirannah = Jumping pirannah
 
-Sprite51:
+Sprite51:;Ninji
+JSR Sprite1C
 RTS
 
-Sprite52:
+Sprite52:;Moving Hole/Ghost House
+JSR HurtLuigi
 RTS
 
-Sprite53:
+Sprite53:;Purple TurnBloock
+JSR Sprite2D
 RTS
 
-Sprite54:			;rotating net door thing
+Sprite54:;rotating net door thing
 RTS
 
-Sprite55:			;vertical/horizontal checkerboard platforms
+Sprite55:;vertical/horizontal checkerboard platforms
 Sprite57:
 LDA $AA,x
 BMI .end
@@ -1150,53 +1765,55 @@ PLY
 SEP #$20
 RTS
 
-Sprite56:
+Sprite56:;Fliying Rock Plataform/Horizontal
+JSR Sprite55
 RTS
 
-Sprite58:
+Sprite58:;Fliying Rock Plataform/Vertical
+JSR Sprite55
 RTS
 
-Sprite59:			;Turn block bridges
+Sprite59:;Turn block bridges
 Sprite5A:
 ;LDA #$08
 ;TSB $0DB9
 LDA #$10
 STZ $0D
-STA $0C			;platform width
+STA $0C;platform width
 STZ $0F
-STA $0E			;platfrorm height
+STA $0E;platfrorm height
 LDA $E4,x
 STA $00
-LDA $14E0,x		;luigi X
+LDA $14E0,x;luigi X
 STA $01
 LDA $D8,x
 CLC
 ADC #$10
-STA $02			;luigi Y foot
+STA $02;luigi Y foot
 LDA $14D4,x
 ADC #$00
 STA $03
-LDA #$10		;small height
+LDA #$10;small height
 STA $0A
 JSR GetHeight
 BEQ +
-LDA #$20		;big height
+LDA #$20;big height
 STA $0A
 +
 LDA $02
 SEC
 SBC $0A
-STA $08			;luigi y head
+STA $08;luigi y head
 LDA $03
 SBC #$00
 STA $09
 STZ $0B
 LDA $00E4,y
-STA $04			;Platform X
+STA $04;Platform X
 LDA $14E0,y
 STA $05
 LDA $00D8,y
-STA $06			;platform Y
+STA $06;platform Y
 LDA $14D4,y
 STA $07
 LDA $009E,y
@@ -1318,13 +1935,15 @@ ORA $1588,x
 STA $1588,x
 RTS
 
-Sprite5B:
+Sprite5B:;Brown Plataform Floating in water
+JSR Sprite55
 RTS
 
-Sprite5C:
+Sprite5C:;CheckBoard Plataform Floating in water
+JSR Sprite55
 RTS
 
-Sprite5D:		;Sprite 5D - Orange sinking platform
+Sprite5D:;Orange sinking platform
 LDA $AA,x
 BMI .end
 LDA $D8,x
@@ -1372,10 +1991,11 @@ PLX
 SEP #$20
 RTS
 
-Sprite5E:
+Sprite5E:;Big Orange Plataform(Beta)
+JSR Sprite5D
 RTS
 
-Sprite5F:			;Brown swinging platform
+Sprite5F:			;Brown swinging plataform
 REP #$20
 LDA $14B8
 PHA
@@ -1446,13 +2066,15 @@ PLY
 .end
 RTS
 
-Sprite60:
+Sprite60:;Flat Green Switch
+JSR SolidSprite
 RTS
 
-Sprite61:
+Sprite61:;Floating Skulls
+JSR SolidSprite
 RTS
 
-Sprite62:		;line guided brown platform
+Sprite62:;line guided brown platform
 LDA $AA,x
 BMI .end
 LDA $D8,x
@@ -1506,7 +2128,7 @@ SEP #$20
 CLC
 RTS
 
-Sprite63:
+Sprite63:;Checker/Bronw Plataform
 JSR Sprite62
 BCC +
 LDA #$00
@@ -1515,52 +2137,54 @@ STA $1540,y
 +
 RTS
 
-Sprite64:
+Sprite64:;Rope Mechanism
 RTS
 
-Sprite68:
+Sprite68:;Fuzzy Ball
 RTS
 
-Sprite69:
+Sprite69:;??????????????
 RTS
 
-Sprite6A:
+Sprite6A:;Coin Game Cloud
 RTS
 
-Sprite6B:
+Sprite6B:;Spring Board /Left Wall
+JSR BounceNoSolid
 RTS
 
-Sprite6C:
+Sprite6C:;Spring Board /Right Wall
+JSR BounceNoSolid
 RTS
 
-Sprite6D:		;invisible solid block
+Sprite6D:;invisible solid block
 SolidSprite:
 LDA $14D4,y
 STA $03
 LDA $00D8,y
-STA $02			; $02 = Block's top
+STA $02; $02 = Block's top
 STZ $04
 STZ $05
 JSR GetHeight
 BEQ +
 LDA #$0B
-STA $04			; $04 = Luigi's height - #$10
+STA $04; $04 = Luigi's height - #$10
 +
 LDA $14D4,x
 STA $01
 XBA
 LDA $D8,x
-STA $00			;$00 = Luigi's y-position
+STA $00;$00 = Luigi's y-position
 REP #$20
 SEC
 SBC $04
-STA $04			;$04 = Luigi's top (b/c being big doesn't change the y-position)
+STA $04;$04 = Luigi's top (b/c being big doesn't change the y-position)
 LDA $00
 CLC
 ADC #$0008
 CMP $02
 BCS .nottop
-SEP #$20		; We're standing on the block!
+SEP #$20; We're standing on the block!
 LDA $AA,x
 BMI .endthing
 REP #$20
@@ -1584,7 +2208,7 @@ SEC
 SBC #$000A
 CMP $02
 BCC .notbottom
-SEP #$20		; We're hitting our head on the block!
+SEP #$20; We're hitting our head on the block!
 LDA $AA,x
 BPL .endthing
 REP #$20
@@ -1607,7 +2231,7 @@ LDA #$02
 RTS
 
 .endthing
-LDA #$00		; We hit nothing :(
+LDA #$00; We hit nothing :(
 RTS
 
 .notbottom
@@ -1644,13 +2268,15 @@ STZ $B6,x
 LDA #$04
 RTS
 
-Sprite6E:
+Sprite6E:;Dino Rhino
+JSR Sprite00
 RTS
 
-Sprite6F:
+Sprite6F:;Dino Torch
+JSR Sprite00
 RTS
 
-Sprite70:		; Pokey
+Sprite70:; Pokey
 LDX #$00
 LDA $00C2,y
 LSR
@@ -1678,7 +2304,7 @@ ASL #4
 EOR #$FF
 CLC
 ADC #$51
-STA $00		; $00 = Distance between pokey top and pokey ypos
+STA $00; $00 = Distance between pokey top and pokey ypos
 STZ $01
 LDA $14D4,y
 XBA
@@ -1692,14 +2318,14 @@ STA $00D8,y
 XBA
 STA $14D4,y
 LDX $0F65
-JSR Sprite4F	; Interact with as jumping pirannah
+JSR Sprite4F; Interact with as jumping pirannah
 PLA
 STA $00D8,y
 PLA
 STA $14D4,y
 RTS
 
-Sprite71:		;Swooper koopas
+Sprite71:;Swooper koopas
 Sprite72:
 GenericMomentumKill:
 LDA $1570,x
@@ -1724,7 +2350,7 @@ JSR HurtLuigi
 .end
 RTS
 
-Sprite73:		;Super koopas
+Sprite73:;Super koopas
 LDA $1656,y
 CMP #$10
 BEQ GenericMomentumKill
@@ -1765,7 +2391,7 @@ JSR HurtLuigi
 .end
 RTS
 
-Sprite74:		;Mushroom
+Sprite74:;Mushroom
 LDA #$00
 STA $14C8,y
 LDA #$0A
@@ -1777,19 +2403,17 @@ AND #$18
 BNE MushReturn
 LDA #$08
 TSB $0DB9
-LDA #$31
-STA $151C,x
-LDA #$07
-STA $1504,x
-STZ $1510,x
-STA $9D
+LDA #$30
+STA $1540,x
 RTS
 MushReturn:
 LDA #$0B
 STA $1DFC
+LDA #$01			;
+STA $0DC2		;Item Box Item = Mushroom
 RTS
 
-Sprite75:		;Flower
+Sprite75:;Flower
 LDA #$00
 STA $14C8,y
 LDA #$0A
@@ -1797,25 +2421,45 @@ STA $1DF9
 LDA #$04
 JSR GetPointsFromY
 LDA $0DB9
+AND #$18;if already have cape, don't play animation
+CMP #$10
+BNE +
+LDA #$04			;Item Number
+STA $0DC2		;Item Box Item = Feather
+LDA #$0B
+STA $1DFC
+LDA $0DB9
 AND #$18
 CMP #$18
 BEQ .alreadyhave
-LDA #$08
-STA $142F
-LDA #$20
-STA $151C,x
 LDA #$18
 TSB $0DB9
+LDA #$30
+STA $1540,x
+RTS
++
+LDA $0DB9
+AND #$18
+CMP #$18
+BEQ .alreadyhave
+LDA #$18
+TSB $0DB9
+LDA #$30
+STA $1540,x
 RTS
 .alreadyhave
 LDA #$0B
 STA $1DFC
+LDA #$02			;
+STA $0DC2		;Item Box Item = Fire Flower
 RTS
 
-Sprite76:		;star
+Sprite76:;star
 LDA #$00
 STA $14C8,y
-LDA #$FF
+LDA #$04
+JSR GetPointsFromY
+LDA #$60
 STA $1570,x
 LDA #$0A
 STA $1DF9
@@ -1823,27 +2467,33 @@ LDA #$0D
 STA $1DFB
 RTS
 
-Sprite77:		;feather
+Sprite77:;feather
 LDA #$00
 STA $14C8,y
 LDA #$04
 JSR GetPointsFromY
-LDA #$0D
-STA $1DF9
 LDA $0DB9
-AND #$18			;if already have cape, don't play animation
+AND #$18
+CMP #$18
+BEQ .alreadyhaveflower
+LDA $0DB9
+AND #$18;if already have cape, don't play animation
 CMP #$10
 BNE +
+LDA #$04			;Item Number
+STA $0DC2		;Item Box Item = Feather
+LDA #$0A
+STA $1DF9
 LDA #$0B
 STA $1DFC
 RTS
 +
+LDA #$0D
+STA $1DF9
 LDA $0DB9
 AND #$E7
 ORA #$10
 STA $0DB9
-LDA #$0A
-STA $1504,x
 LDA #$18
 STA $151C,x
 PHY
@@ -1870,10 +2520,65 @@ ADC #$08
 STA $17C4,y
 LDA $E4,x
 STA $17C8,y
+LDA #$30
+STA $1540,x
+PLY
+RTS
+.alreadyhaveflower
+LDA #$0B
+STA $1DFC
+LDA #$02			;
+STA $0DC2		;Item Box Item = Fire Flower
+LDA #$00
+STA $14C8,y
+LDA $0DB9
+AND #$18;if already have cape, don't play animation
+CMP #$10
+BNE +
+LDA #$04			;Item Number
+STA $0DC2		;Item Box Item = Feather
+LDA #$0B
+STA $1DFC
+RTS
++
+LDA #$0D
+STA $1DF9
+LDA $0DB9
+AND #$E7
+ORA #$10
+STA $0DB9
+LDA #$18
+STA $151C,x
+PHY
+LDY #$03
+-
+LDA $17C0,y
+BEQ +
+DEY
+BPL -
+DEC $1863
+BPL ++
+LDA #$03
+STA $1863
+++
+LDY $1863
++
+LDA #$81
+STA $17C0,y
+LDA #$1B
+STA $17CC,y
+LDA $D8,x
+CLC
+ADC #$08
+STA $17C4,y
+LDA $E4,x
+STA $17C8,y
+LDA #$30
+STA $1540,x
 PLY
 RTS
 
-Sprite78:		;1-up
+Sprite78:;1-up
 LDA #$00
 STA $14C8,y
 OneUpRex:
@@ -1885,30 +2590,73 @@ TXY
 PLX
 RTS
 
-Sprite79:		;growing vine
+Sprite79:;growing vine
 RTS
 
-Sprite7A:
+Sprite7A:;Fire Work
 RTS
 
-Sprite7B:		;goal
+Sprite7B:;goal
+JSR GoalCheck
 RTS
 
-Sprite7C:
+Sprite7C:;Secret Goal Point
 RTS
 
-Sprite7D:
+Sprite7D:;P Ballon
+JSR SolidSprite
 RTS
 
-Sprite7E:
+Sprite7E:;Flying Red Coin
+LDA $0DBF
+CMP #$63
+BEQ NoGiveRedCoin
+NoGiveRedCoin:
+LDA #$01
+STA $1DFC
+LDA #$00
+STA $14C8,y
+LDA #$03
+JSL $02ACE5
+JSL $05B34A;\
+JSL $05B34A;			|
+JSL $05B34A;			|+5 coin
+JSL $05B34A;			|
+JSL $05B34A;			/
+JSL $00BEB0
+JSR BlockSparkle
 RTS
 
-			;flying yellow mushroom = 1up
+;flying yellow mushroom = 1up
 
-Sprite80:
+Sprite80:;Key
+LDA $0DB9
+BIT #$00
+BEQ NoSpinKey
+NoSpinKey:
+LDA $0DA3
+ORA $0DA5
+BIT #$40
+BEQ NoXYKey
+JSR UpdatePosByCarry
+LDA $0DB9
+BMI +
+LDA #$80
+TSB $0DB9
+LDA #$08
+STA $154C,x
++
+RTS
+NoXYKey:
+LDA $0DB9
+BPL KickKey
+JSR LetGo
+RTS
+KickKey:
+JSR SolidSprite
 RTS
 
-Sprite81:		;changing item
+Sprite81:;changing item
 SEP #$10
 LDA $187B,y               ; \ Determine which power-up to act like
 LSR                       ;  |
@@ -1918,9 +2666,9 @@ LSR                       ;  |
 LSR                       ;  |
 LSR                       ;  |
 AND #$03                  ;  |
-ASL			  ;  |
+ASL  ;  |
 TAX                       ;  |
-JMP (ChangingItem,x)	  ; /
+JMP (ChangingItem,x)  ; /
 
 ChangingItem:
 dw Sprite74
@@ -1928,42 +2676,11 @@ dw Sprite75
 dw Sprite77
 dw Sprite76
 
-Sprite82:		;bonus game thing
-LDA $AA,x
-BPL .end
-LDA $0DB9
-AND #$02
-ASL #3
-CLC
-ADC #$0C		;ducking:20   standing:10
-CLC
-ADC $00D8,y
-STA $00
-LDA $14D4,y
-ADC #$00
-STA $01
-LDA $14D4,x
-XBA
-LDA $D8,x
-REP #$20
-SEC
-SBC $00
-CMP #$0004
-SEP #$20
-BCS .end
-LDA #$10
-STA $AA,x
-TYX
-PHK
-PEA.w .return-1
-PEA $EA1F
-JML $81DE77
-.return
-TXY
-.end
+Sprite82:;bonus game thing
+JSR Sprite81
 RTS
 
-Sprite83:		;flying question block
+Sprite83:;flying question block
 JSR SolidSprite
 PHA
 LDA $00C2,y
@@ -2012,37 +2729,38 @@ RTS
 PLA
 RTS
 
-Sprite84:
+Sprite84:;Fliying Question Block 2
+JSR Sprite83
 RTS
 
-Sprite85:
+Sprite85:;???????????
 RTS
 
-Sprite86:
+Sprite86:;Wiggler
 RTS
 
-Sprite87:
+Sprite87:;Lakitu Cloud
 RTS
 
-Sprite88:
+Sprite88:;????????????
 RTS
 
-Sprite89:
+Sprite89:;Layer 3 Smash
 RTS
 
-Sprite8A:
+Sprite8A:;Bird Yoshi House
 RTS
 
-Sprite8B:
+Sprite8B:;Puf Smoke Yoshi House
 RTS
 
-Sprite8C:			;Fireplace smoke/side exit enabled
+Sprite8C:;Fireplace smoke/side exit enabled
 RTS
 
-Sprite8D:
+Sprite8D:;Ghost House Exit Sing and Door
 RTS
 
-Sprite8E:			;warp hole
+Sprite8E:;Warp hole
 LDA $E4,x
 CLC
 ADC #$30
@@ -2052,30 +2770,76 @@ ADC #$00
 STA $14E0,x
 RTS
 
-Sprite8F:
+Sprite8F:;Scale Plataforms
+LDA $AA,x
+BMI .end
+LDA $D8,x
+CLC
+ADC #$0D
+STA $00
+LDA $14D4,x
+ADC #$00
+STA $01
+LDA $14D4,y
+XBA
+LDA $00D8,y
+REP #$20
+CMP $00
+BCS .end
+SEC
+SBC #$000F
+SEP #$20
+STA $D8,x
+XBA
+STA $14D4,x
+LDA #$40
+STA $AA,x
+LDA $1588,x
+ORA #$04
+STA $1588,x
+PHX
+LDX #$03
+LDA $0DB9
+BIT #$18
+BNE +
+DEX
++
+STX $00
+TYX
+LDA $AA,x
+CMP $00
+BPL +
+CLC
+ADC #$02
+STA $AA,x
++
+PLX
+.end
+SEP #$20
 RTS
 
-Sprite90:
+Sprite90:;Large Green Gas Bubble
+JSR Sprite70
 RTS
 
-Sprite91:		;chargin' chuck
+Sprite91:;Chargin' chuck
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
 LDA #$00
-JSR LocateContact	;\if the chuck wins
-BEQ ChuckWins		;/hurt player
+JSR LocateContact;\if the chuck wins
+BEQ ChuckWins;/hurt player
 JSR BoostSpeed
-LDA #$02		;\bounce sound
-STA $1DF9		;/
-LDA $00C2,y		;\if stunned
-CMP #$03		; |
-BEQ ChuckBounce		;/don't hurt
-LDA $1528,y		;\inc hitpoints
-INC			; |
-STA $1528,y		;/
-CMP #$03		;\if three, kill
-BEQ KillChuck		;/
+LDA #$02;\bounce sound
+STA $1DF9;/
+LDA $00C2,y;\if stunned
+CMP #$03; |
+BEQ ChuckBounce;/don't hurt
+LDA $1528,y;\inc hitpoints
+INC; |
+STA $1528,y;/
+CMP #$03;\if three, kill
+BEQ KillChuck;/
 
 LDA #$28                ;\ Play sound effect ;From chuck dissasembly
 STA $1DFC               ;/
@@ -2096,6 +2860,9 @@ LDA #$02
 STA $14C8,y
 LDA #$13
 STA $1DF9
+;
+LDA #$03
+JSL $02ACE5
 ChuckBounce:
 RTS
 
@@ -2121,24 +2888,49 @@ INY                       ;return y as 1 if player on left of enemy
 Return02D50B:
 RTS
 
-			;ALL CHUCKS = chargin' chuck
+;ALL CHUCKS = chargin' chuck
 
-Sprite99:
+Sprite99:;Volcano Lotus
+JSR Sprite4F
 RTS
 
-Sprite9A:
+Sprite9A:;Sumo
+JSR Sprite4F
 RTS
 
-Sprite9B:
+Sprite9B:;Hammer Brother
+JSR Sprite1C
 RTS
 
-Sprite9C:
+Sprite9C:;Fliying Blocks
+JSR Sprite83
 RTS
 
-Sprite9D:
+Sprite9D:;Bubble With a Goomba/bomb/Fish/Mushroom
+LDA #$00
+STA $00AA,y
+STA $00B6,y
+LDA #$02
+STA $14C8,y		;set state to whatev~
+;Boos Speed
+;PHX
+;TYX
+JSL $01AB72		;white-star
+;PLX
+LDA $0DA3
+ORA $0DA5
+BIT #$80
+BNE StopJump
+LDA #$CF
+STA $AA,x
+RTS
+StopJump:
+LDA #$CF
+STA $AA,x
+RTS
 RTS
 
-Sprite9F:		;Banzai bill
+Sprite9F:;Banzai bill
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
@@ -2170,25 +2962,25 @@ BanzaiWin:
 JSR HurtLuigi
 RTS
 
-SpriteA0:
+SpriteA0:;Activate Bowser Ecene
+JSR HurtLuigi
 RTS
 
-SpriteA1:
+SpriteA1:;Bowser Bowling Ball
+JSR Sprite70
 RTS
 
-SpriteA2:
+SpriteA2:;Mecha koopas
+JSR Sprite0F
 RTS
 
-SpriteA3:
-LDA #$18
-TSB $0DB9
+SpriteA3:;Grey Plataform on chain
 RTS
 
-
-SpriteAA:
+SpriteAA:;Fish Bone
 RTS
 
-SpriteAB:		;Rex
+SpriteAB:;Rex
 LDA $1570,x
 BEQ $03
 JMP KillWithStar
@@ -2218,7 +3010,7 @@ SmushRex:
 LDA #$0C                ; \ Time to show semi-squashed Rex = $0C
 STA $1FE2,y             ; /
 LDA #$00
-STA $1662,y  		; Change clipping area for squashed Rex
+STA $1662,y  ; Change clipping area for squashed Rex
 LDA #$08
 JSR BounceSquash
 RTS
@@ -2230,31 +3022,39 @@ RexWins:
 JSR HurtLuigi
 RTS
 
-SpriteAC:
+SpriteAC:;Wooden Spike Up
+JSR HurtLuigi
 RTS
 
-SpriteAD:
+SpriteAD:;Wooden Spike Down
+JSR HurtLuigi
 RTS
 
-SpriteAE:
+SpriteAE:;Fishing Boo
+JSR Sprite4F
 RTS
 
-SpriteAF:
+SpriteAF:;Boo Block
+JSR SolidSprite
 RTS
 
-SpriteB0:
+SpriteB0:;Reflecting stream of Boo Buddies
+JSR Sprite4F
 RTS
 
-SpriteB1:
+SpriteB1:;Creating/Eating Block
+JSR SolidSprite
 RTS
 
-SpriteB7:
+SpriteB7:;Carrot Top lift 1
+JSR SolidSprite
 RTS
 
-SpriteB8:
+SpriteB8:;Carrot Top lift 2
+JSR SolidSprite
 RTS
 
-SpriteB9:		;Message Box
+SpriteB9:;Message Box
 JSR SolidSprite
 CMP #$02
 BNE .end
@@ -2263,39 +3063,46 @@ STA $1558,y
 .end
 RTS
 
-SpriteBA:
+SpriteBA:;Timed Lift 4/1Seconds
+JSR SolidSprite
 RTS
 
-SpriteBB:
+SpriteBB:;Grey Moving castle Block
+JSR SolidSprite
 RTS
 
-SpriteBC:
+SpriteBC:;Bowser Statues
+JSR SolidSprite
 RTS
 
-			;blue sliding koopa = green shelless koopa
+;blue sliding koopa = green shelless koopa
 
-SpriteBE:
+SpriteBE:;?????????????
 RTS
 
-SpriteBF:
+SpriteBF:;MegaMole
+JSR SolidSprite
 RTS
 
-SpriteC0:
+SpriteC0:;Grey Plataform on lava
+JSR Sprite5D
 RTS
 
-SpriteC1:
+SpriteC1:;Fliying Grey Turn Blocks
+JSR SolidSprite
 RTS
 
-SpriteC4:
+SpriteC4:;Grey Plataforms That Falls
+JSR Sprite5D
 RTS
 
-SpriteC5:
+SpriteC5:;Big Boo Boss
 RTS
 
-SpriteC6:
+SpriteC6:;Dark room with spot light
 RTS
 
-SpriteC7:		;Invisible mushroom
+SpriteC7:;Invisible mushroom
 TYX
 PHX
 JSL GenMushroom
@@ -2303,19 +3110,21 @@ PLY
 RTS
 
 pushpc
-org $03E05C			; Freespace - just allows this call to be made from our bank
+org $03E05C; Freespace - just allows this call to be made from our bank
 GenMushroom:
 JSR $C318
 RTL
 pullpc
 
-SpriteC8:
+SpriteC8:;Ligth question Block
+JSR Sprite83
 RTS
 
-SpriteC9:
+SpriteC9:;Bullet Bill Shoter
 RTS
 
-SpriteCA:
+SpriteCA:; Torpedo Launcher
+JSR Sprite4F
 RTS
 
 
@@ -2326,7 +3135,7 @@ RTS
 
 
 ExtSprSize:
-	db $00,$08,$04,$08,$00,$08,$00
+db $00,$08,$04,$08,$00,$08,$00
 db $00,$00,$08,$04,$04,$04,$00,$00
 db $00,$00,$00
 
@@ -2364,7 +3173,7 @@ AND #$02
 EOR #$02
 ASL #3
 CLC
-ADC #$10			;10: Ducking - 20: Standing
+ADC #$10;10: Ducking - 20: Standing
 STA $06
 STZ $07
 LDA $14D4,x
@@ -2396,7 +3205,7 @@ BEQ .coinprocess
 JSR HurtLuigi
 BRA .endloop
 .coinprocess
-				;TODO - interact with coin game coin!
+;TODO - interact with coin game coin!
 BRA .endloop
 .continue
 DEX
@@ -2420,7 +3229,7 @@ BNE .typetwo
 JSR TypeOne
 BRA .continue
 
-.typetwo				;1up, maybe more?
+.typetwo;1up, maybe more?
 DEC
 BNE .typethree
 JSR TypeTwo
@@ -2437,7 +3246,7 @@ RTS
 db $02,$00,$01,$01,$00,$FF,$01,$FF
 
 TypeOne:
-LDA $1E16,y				;Boo ceiling, disappearing boos
+LDA $1E16,y;Boo ceiling, disappearing boos
 STA $04
 LDA $1E3E,y
 STA $0A
@@ -2455,7 +3264,7 @@ BCC .end
 LDA $1892,y
 CMP #$07
 BNE +
-LDA $190A			;2 - conditional kill - $190A
+LDA $190A;2 - conditional kill - $190A
 SEC
 SBC #$40
 CMP #$A0
@@ -2465,7 +3274,7 @@ RTS
 +
 CMP #$03
 BNE +
-LDA $0F86,y			;3 - conditional kill - $0F86,y
+LDA $0F86,y;3 - conditional kill - $0F86,y
 BEQ .end
 +
 JSR HurtLuigi
@@ -2496,7 +3305,7 @@ CLC
 ADC #$20
 CMP $00
 BCS .end
-LDA #$00			;4 - 1up
+LDA #$00;4 - 1up
 STA $1892,y
 LDA #$10
 LDX $0F65

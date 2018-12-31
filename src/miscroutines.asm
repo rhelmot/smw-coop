@@ -35,7 +35,7 @@ TXA
 CLC
 ADC #$0C
 TAX
-JSR UpdatePosY
+JSR UpdatePosY 
 LDX $0F65
 RTS
 
@@ -145,15 +145,12 @@ BNE .end
 LDA $0DB9
 AND #$18
 if !THREEPLAYER || !!SMALLPLAYERS
-CMP #$08
 endif
 BEQ KillLuigi
 
 if !!PLAYERKNOCKBACK && !SMALLPLAYERS && !!THREEPLAYER
-LDA #$06
+LDA #$05
 STA $1504,x
-LDA #$2F
-STA $151C,x
 STA $9D
 endif
 
@@ -180,7 +177,7 @@ LDA #$E8
 STA $B6,x
 endif
 
-LDA #$60
+LDA #$90
 STA $1540,x
 .end
 RTS
@@ -299,11 +296,36 @@ LDA $0DA3
 ORA $0DA5
 BIT #$80
 BNE LargeJump
-LDA #$E0
+LDA #$D0
 STA $AA,x
 RTS
 LargeJump:
+LDA #$A8
+STA $AA,x
+RTS
+
+;;;;;;;;;
+;
+; SuperBoostSpeed
+;
+; SuperBoost's Luigi's speed as though he stomped on an enemy.
+;;;;;;;;;
+
+SuperBoostSpeed:
+;PHX
+;TYX
+;PLX
+LDA #$08                ; \ Play sound effect
+STA $1DFC 
+LDA $0DA3
+ORA $0DA5
+BIT #$80
+BNE SuperLargeJump
 LDA #$B0
+STA $AA,x
+RTS
+SuperLargeJump:
+LDA #$80
 STA $AA,x
 RTS
 
@@ -605,6 +627,37 @@ TYX
 JSL $82ACE5		;get points
 PLX
 PLY
+RTS
+
+KillNoSound:
+STA $14C8,y		;set state to whatev~
+JSR BoostSpeed
+SpinKillEntry2:
+PHY			;preserve/zero Y
+LDY #$00
+BRA Sensible2
+StarKillEntry2:		;Y=counter to use. 0=regular 1=star
+PHY
+LDY #$01
+Sensible2:
+LDA $0F61,y
+INC
+STA $0F61,y
+CMP #$08
+BCC Lessthan1up2
+DEC
+STA $0F61,y
+LDA #$02
+STA $1DF9
+PLY
+JMP OneUpRex
+Lessthan1up2:
+LDA $0F61,y
+CLC
+LDA $0F61,y
+PLY
+LDA #$01
+JSL $02ACE5
 RTS
 
 PushEdges:											;DON'T WALK OFF SCREEN
