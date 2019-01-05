@@ -1,6 +1,11 @@
 Sprites:
+LDA $0F60
+STA $142C
+LDA #$FF
+STA $0F60
+
 LDX #$0B		;Load # of sprites
-INTRLOOP:					;Loopstart above get-self-clipping so moar scratch ram can be used
+INTRLOOP:					;Loopstart above get-self-clipping so moar scratch ram can be used (TODO very inefficient)
 CPX $0F65
 BEQ NEXTSPR
 LDA $14C8,x
@@ -8,37 +13,16 @@ CMP #$08
 BCC NEXTSPR
 LDA $154C,x
 BNE NEXTSPR
-JSL $83B69F		;get clipping for client sprite
-LDA $9E,x
-CMP #$5F
-BNE +
-JSR GetBrownPlatClip
-BRA ++
-+
-CMP #$59
-BNE +
--
-JSR GetTurnBrdgClip
-BRA ++
-+
-CMP #$5A
-BEQ -
-CMP #$62
-BNE +
--
-JSR MovingPlatClip
-+
-CMP #$63
-BEQ -
-CMP #$A3
-BNE +
-JSR RotPlatClip
-BRA ++
-+
-++
+
+JSR GetSpriteClip
+JSR UpdateSpriteDeltas
+
 JSR ClipWithMe
 BCC NEXTSPR		;if no contact, continue loop
+
 LDA $0DB9
+
+; if debug mode is enabled, put the sprite number we're touching on the status bar
 BIT #$40
 BEQ +
 LDA $9E,x
@@ -49,8 +33,9 @@ PLA
 LSR #4
 STA $0EF9
 +
+
 TXY			;client sprite index to Y
-JSR SPRITE_INTERACT	;interact
+JSR SpriteInteract	;interact
 TYX			;client back to X
 NEXTSPR:
 DEX			;next sprite
@@ -59,6 +44,101 @@ INTREND:
 LDX $0F65
 RTS
 
+; Load the clipping for the current sprite. stores:
+;   $04 = xpos low byte
+;   $05 = ypos low byte
+;   $06 = xsize
+;   $07 = ysize
+;   $0A = xpos high byte
+;   $0B = ypos high byte
+GetSpriteClip:
+LDA $9E,x
+CMP #$5F
+BNE +
+JMP BrownRotatingPlatformClip
+
++
+CMP #$59
+BNE +
+-
+JMP GetTurnBrdgClip
++
+CMP #$5A
+BEQ -
+
+CMP #$62
+BNE +
+-
+JMP MovingPlatClip
++
+CMP #$63
+BEQ -
+
+CMP #$A3
+BNE +
+JMP GreyRotatingPlatformClip
+
++
+JSL $83B69F		; default clipping routine
+RTS
+
+
+; Update the custom $7FAC60-etc tables
+; Then if luigi is riding this sprite update his position
+UpdateSpriteDeltas:
+LDA $05
+PHA
+SEC
+SBC $7FAC78,x
+STA $7FAC60,x
+PLA
+STA $7FAC78,x
+
+LDA $04
+PHA
+SEC
+SBC $7FAC84,x
+STA $7FAC6C,x
+PLA
+STA $7FAC84,x
+
+CPX $142C
+BNE .notRiding
+LDY $0F65
+
+STZ $00
+LDA $7FAC60,x
+BPL +
+DEC $00
++
+CLC
+ADC $00D8,y
+STA $00D8,y
+LDA $14D4,y
+ADC $00
+STA $14D4,y
+
+STZ $00
+LDA $7FAC6C,x
+BPL +
+DEC $00
++
+CLC
+ADC $00E4,y
+STA $00E4,y
+LDA $14E0,y
+ADC $00
+STA $14E0,y
+
+.notRiding
+RTS
+
+
+; Load luigi's clipping. stores:
+;   $00 = xpos low byte
+;   $01 = ypos low byte
+;   $08 = xpos high byte
+;   $09 = ypos high byte
 ClipWithMe:		;Uses: $00,$01,$02,$03,$08,$09
 PHX
 LDX $0F65
@@ -88,27 +168,6 @@ db $00,$10
 
 .negtentwenty
 db $10,$20
-
-GetBrownPlatClip:
-LDA $14B8
-SEC
-SBC #$18
-STA $04
-LDA $14B9
-SBC #$00
-STA $0A
-LDA #$40
-STA $06
-LDA $14BA
-SEC
-SBC #$0C
-STA $05
-LDA $14BB
-SBC #$00
-STA $0B
-LDA #$13
-STA $07
-RTS
 
 GetTurnBrdgClip:
 LDA $C2,x
@@ -181,52 +240,106 @@ LDA #$10
 STA $07
 RTS
 
-RotPlatClip:				;here's hoping this works!
-LDA $151C,X
+BrownRotatingPlatformClip:
+LDA $164A,x
+XBA
+LDA $1588,x
+REP #$20
+STA $00
+LDA #$0080
+SEC
+SBC $00
+AND #$01FF
+STA $00
+SEP #$20
+LDA #$50
+STA $0D
+LDA #$38
+STA $0E
+JSR GenericRotatingPlatformClip
+LDA $04
+SEC
+SBC #$58
+STA $04
+LDA $0A
+SBC #$00
+STA $0A
+LDA $05
+SEC
+SBC #$10
+STA $05
+LDA $0B
+SBC #$00
+STA $0B
+RTS
+
+
+GreyRotatingPlatformClip:
+LDA $151C,x		; 0 = rising, 1 = falling
 STA $01
-LDA $1602,X
-STA $00                   ; $00 = 1602-151C
-PHX
-REP #$30                  ; Index (16 bit) Accum (16 bit)
+LDA $1602,x		; low angle - when it hits ff 151C toggles
+STA $00                 ; $00 = full angle
+LDA $187B,x
+STA $0D
+LDA #$28
+STA $0E
+JMP GenericRotatingPlatformClip
+
+; Calculate clipping for a rotating platform. input:
+;   $00[16] = angle, 0 = down, increasing counterclockwise
+;   $0D[8] = radius
+;   $0E[8] = width
+; this code adapted from $02D62A-ish
+GenericRotatingPlatformClip:
+PHX			; 0 = down, 80 = right, 100 = up, 180 = left
+REP #$30
 LDA $00
 CLC
 ADC #$0080
 AND #$01FF
-STA $02                   ; $02 = $00 + #$80 % #$0200
+STA $02			; tweak angle - 0 = left, 80 = down, 100 = right, 180 = up
+
 LDA $00
 AND #$00FF
 ASL
 TAX
-LDA $07F7DB,X
-STA $04
+LDA $07F7DB,x		; index into the sine table with only the low part of the angle
+STA $04			; into 04 and 06 for the two angles respectively
+
 LDA $02
 AND #$00FF
 ASL
 TAX
-LDA $07F7DB,X
+LDA $07F7DB,x
 STA $06
-SEP #$30                  ; Index (8 bit) Accum (8 bit)
-PLX               ; X = Sprite index
+
+	; $04 = sin(theta) * 0x100
+	; $06 = cos(theta) * 0x100
+
+SEP #$30
+PLX			; X = Sprite index
+
 LDA $04
-STA $4202               ; Multiplicand A
-LDA $187B,X
-LDY $05
+STA $4202               ; Multiply circle coordinate 1...
+LDA $0D
+LDY $05			; (if 05 is 1 then the sine is #$100, special case)
 BNE +
-STA $4203               ; Multplier B
-NOP #8         ; wait for multiplication to complete
-ASL $4216               ; Product/Remainder Result (Low Byte)
-LDA $4217               ; Product/Remainder Result (High Byte)
-ADC #$00
+STA $4203		; ... by sprite radius (#$30 for gray plat)
+NOP #8
+ASL $4216
+LDA $4217               ; Take the high byte of the result
+ADC #$00		; ... plus 1 if the low byte is >#$7f (round to nearest)
 +
-LSR $01
+LSR $01			; if the original angle is >#$ff, negate the result
 BCC +
 EOR #$FF
 INC A
-STA $04
 +
+STA $04
+
 LDA $06
 STA $4202               ; Multiplicand A
-LDA $187B,X
+LDA $0D
 LDY $07
 BNE +
 STA $4203               ; Multplier B
@@ -241,70 +354,75 @@ EOR #$FF
 INC A
 +
 STA $06
-LDA $E4,X
-PHA
-LDA $14E0,X
-PHA
-LDA $D8,X
-PHA
-LDA $14D4,X
-PHA
-LDY $0F86,X
-STZ $00
+
+; goal: compute $04:$0A = sprite.x + $04 + #$0008 - (width >> 1)
+
+STZ $05
 LDA $04
 BPL +
-DEC $00
+DEC $05		; set $05 to sign of $04
 +
+
+STZ $0F
+LSR $0E
+LDA $14E0,x
+XBA
+LDA $E4,x
+REP #$20
+SEC
+SBC $0E
 CLC
-ADC $E4,X
-STA $E4,X
-; PHP
-; PHA
-; SEC
-; SBC $1534,X
-; STA $1528,X
-; PLA
-; STA $1534,X
-; PLP
-LDA $14E0,X
-ADC $00
-STA $14E0,X
-STZ $01
+ADC $04
+CLC
+ADC #$0008
+SEP #$20
+STA $04
+XBA
+STA $0A
+
+
+; round 2: compute $05:$0B = sprite.y + $06 - #$0002
+
+STZ $07
 LDA $06
 BPL +
-DEC $01
+DEC $07
 +
-CLC
-ADC $D8,X
-STA $D8,X
+
 LDA $14D4,X
-ADC $01
-STA $14D4,X
-JSR MovingPlatClip
-PLA
-STA $14D4,x
-PLA
-STA $D8,x
-PLA
-STA $14E0,x
-PLA
-STA $E4,x
+XBA
+LDA $D8,X
+REP #$20
+CLC
+ADC $06
+SEC
+SBC #$0002
+SEP #$20
+STA $05
+XBA
+STA $0B
+
+LDA $0E
+ASL
+STA $06
+LDA #$10
+STA $07
 RTS
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; SPRITE_INTERACT
+; SpriteInteract
 ;
-; Oh, lovely, I get to code interaction with EVERY SINGLE ****ING SPRITE IN THE GAME
-; :(
+; The big boy! The grand master of the circus ring!
+; :)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-SPRITE_INTERACT:
+SpriteInteract:
 LDA $009E,y		;\client sprite #
 REP #$30		; |set 16 bit A
 AND #$00FF		; |clear high byte
-ASL				; |double
+ASL			; |double
 TAX
 LDA.w Ptr,x
 STA $00			; |store to scratch
@@ -1097,59 +1215,6 @@ RTS
 Sprite54:			;rotating net door thing
 RTS
 
-Sprite55:			;vertical/horizontal checkerboard platforms
-Sprite57:
-LDA $AA,x
-BMI .end
-LDA $14D4,y
-STA $01
-LDA $00D8,y
-STA $00
-LDA $14D4,x
-XBA
-LDA $D8,x
-REP #$20
-;CLC
-;ADC #$0006
-CMP $00
-BCS .end
-LDA $00
-SEC
-SBC #$000F
-SEP #$20
-STA $D8,x
-XBA
-STA $14D4,x
-LDA #$40
-STA $AA,x
-LDA #$04
-ORA $1588,x
-STA $1588,x
-LDA $009E,y
-CMP #$55
-BNE .end
-LDA $1588,x
-BIT #$03
-BNE .end
-LDA $1528,y
-PHY
-LDY #$00
-PHA
-PLA
-BPL +
-DEY
-+
-CLC
-ADC $E4,x
-STA $E4,x
-TYA
-ADC $14E0,x
-STA $14E0,x
-PLY
-.end
-SEP #$20
-RTS
-
 Sprite56:
 RTS
 
@@ -1325,32 +1390,8 @@ Sprite5C:
 RTS
 
 Sprite5D:		;Sprite 5D - Orange sinking platform
-LDA $AA,x
-BMI .end
-LDA $D8,x
-CLC
-ADC #$0D
-STA $00
-LDA $14D4,x
-ADC #$00
-STA $01
-LDA $14D4,y
-XBA
-LDA $00D8,y
-REP #$20
-CMP $00
-BCS .end
-SEC
-SBC #$000F
-SEP #$20
-STA $D8,x
-XBA
-STA $14D4,x
-LDA #$40
-STA $AA,x
-LDA $1588,x
-ORA #$04
-STA $1588,x
+JSR SimplePlatform
+BCC .end
 PHX
 LDX #$03
 LDA $0DB9
@@ -1372,138 +1413,96 @@ PLX
 SEP #$20
 RTS
 
-Sprite5E:
-RTS
+Sprite5F:		; Brown swinging platform
+JSR SimplePlatform
+BCC .end
 
-Sprite5F:			;Brown swinging platform
-REP #$20
-LDA $14B8
-PHA
-SEC
-SBC #$0022
-STA $14B8
-LDA $14BA
+LDA #$03
+STA $1602,y
+LDA $13
+LSR
+BCS .end
+
+; copypasted brown platform acceleration code
+PHX
+TYX
+LDA $151C,x
 CLC
-ADC #$0010
-STA $0E
-SEP #$20
-JSR MainSwingPlat
-REP #$20
-PLA
-STA $14B8
-SEP #$20
+ADC #$80
+LDA $1528,x
+ADC #$00
+AND #$01
+TAY
+LDA $1504,x
+CMP.w DATA_01C9D8,y
+BEQ +
+CLC
+ADC.w DATA_01C9D6,y
+STA $1504,x
++
+TXY
+PLX
+
+.end
 RTS
 
-MainSwingPlat:
-LDA $AA,x
+DATA_01C9D6:              db $01,$FF
+DATA_01C9D8:              db $40,$C0
+
+Sprite55:		; Vertical/horizontal checkerboard platforms
+Sprite57:
+Sprite62:		; Line guided brown platform
+SpriteA3:		; Sprite A3 - Grey rotating platform
+SimplePlatform:
+LDA $AA,x		; if moving up return
 BMI .end
-LDA $D8,x
-STA $00
-LDA $14D4,x
-STA $01
-LDA $14E0,x
+
+LDA $0B			; mutate clipping info into ypos for collision top at $05
+STA $06
+
+LDA $14D4,x		; compare ypos + #$0D to platform - must be within 5 pixel window
 XBA
-LDA $E4,x
+LDA $D8,x
 REP #$20
+CLC
+ADC #$000D
 SEC
-SBC $14B8
-BMI .end
-CMP #$0046
+SBC $05
+CMP #$0005
 BCS .end
-LDA $00
-CMP $0E
-BCS .end
-LDA $14BA
+
+LDA $05			; lock luigi ypos to platform
 SEC
-SBC #$0018
+SBC #$000D
 SEP #$20
 STA $D8,x
 XBA
 STA $14D4,x
-LDA #$40
+
+LDA #$08		; set yspeed
 STA $AA,x
-LDA #$04
-ORA $1588,x
+
+LDA $1588,x		; mark touching ground
+ORA #$04
 STA $1588,x
-LDA $1588,x
-AND #$03
-BNE .end
-LDA $1534,y
-PHY
-LDY #$00
-PHA
-PLA
-BPL +
-DEY
-+
-CLC
-ADC $E4,x
-STA $E4,x
-TYA
-ADC $14E0,x
-STA $14E0,x
-PLY
+
+STY $0F60		; mark this sprite index as being ridden (for position updates)
+
+SEC
+RTS
+
 .end
+SEP #$20
+CLC
+RTS
+
+Sprite5E:
 RTS
 
 Sprite60:
 RTS
 
 Sprite61:
-RTS
-
-Sprite62:		;line guided brown platform
-LDA $AA,x
-BMI .end
-LDA $D8,x
-CLC
-ADC #$16
-STA $00
-LDA $14D4,x
-ADC #$00
-STA $01
-LDA $14D4,y
-XBA
-LDA $00D8,y
-REP #$20
-CMP $00
-BCS .end
-SEC
-SBC #$0016
-SEP #$20
-STA $D8,x
-XBA
-STA $14D4,x
-LDA #$20
-STA $AA,x
-LDA $1588,x
-ORA #$04
-STA $1588,x
-PHX
-TYX
-LDA $7FAC6C,x
-STA $00
-STZ $01
-BPL +
-DEC $01
-+
-PLX
-LDA $14E0,x
-XBA
-LDA $E4,x
-REP #$20
-CLC
-ADC $00
-SEP #$20
-STA $E4,x
-XBA
-STA $14E0,x
-SEP #$20
-SEC
-RTS
-.end
-SEP #$20
-CLC
 RTS
 
 Sprite63:
@@ -2178,12 +2177,6 @@ RTS
 
 SpriteA2:
 RTS
-
-SpriteA3:
-LDA #$18
-TSB $0DB9
-RTS
-
 
 SpriteAA:
 RTS

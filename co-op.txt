@@ -23,7 +23,7 @@ List A: RAM Map
 
 0F5E  :  unused!
 0F5F  :  unused!
-0F60  :  unused!
+0F60  :  sprite index of platform luigi is riding on, #$FF if luigi is not riding on anything
 0F61  :  number of enemies bounced on
 0F62  :  number of enemies killed w/ star
 0F63  :  ----LLMM flags. 00 - Died 01 - Bubble 10 - Inactive, but effecting play 11 - active
@@ -42,6 +42,10 @@ List A: RAM Map
 0F71  :  unused!
 
 142C-142F: various scratch
+sprites:
+  142C is the previous frame's 0F60 value
+objects:
+  ???
 
 1504,x:  Current animation. See List B. Set high bit to teleport afterwards.
 1510,x:  Current frame, $13E0 values
@@ -64,6 +68,8 @@ List A: RAM Map
 
 7FAC60: Sprite table for number of vertical pixels moved per frame
 7FAC6C: Sprite table for number of horizontal pixels moved per frame
+7FAC78: Sprite table for previous frame's y-clip
+7FAC84: Sprite table for previous frame's x-clip
 
 
 List A2: Reserved OAM:

@@ -920,33 +920,6 @@ BooCielOam:
 		RTL
 
 pushpc
-org $01AC09
-JML UniversalPixelHack
-pullpc
-
-UniversalPixelHack:
-		STA $7FAC60,x
-		REP #$20
-		PLA
-		LDX #$81
-		PHX
-		PHA
-		SEP #$20
-		LDX $15E9
-		RTL
-
-pushpc
-org $01DAF0
-JSL LineGuidePixelHack
-pullpc
-
-LineGuidePixelHack:
-		INC
-		STA $1528,x
-		STA $7FAC6C,x
-		RTL
-
-pushpc
 org $008449
 JSL DebugOAM
 NOP
@@ -985,3 +958,18 @@ DebugOAM:			; What the hell does this do??
 	.end
 		REP #$20
 		RTL
+
+pushpc
+org $01CCF0
+JSL SaveBrownPlat
+
+pullpc
+
+SaveBrownPlat:
+	LDA $151C,x
+	STA $1588,x
+	LDA $1528,x
+	STA $164A,x
+	LDA $1504,x
+	ASL
+	RTL
