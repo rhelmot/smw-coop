@@ -165,7 +165,7 @@ List D: TODOs
 -Do something about title sequence
 -Expanding/shrinking turnblocks in Iggy castle - DONE
 -L3 crushers
--Swinging Platforms: more than one at once
+-Swinging Platforms: more than one at once - DONE
 -Add few frames of foot pedaling in midair
 -Replicate mario motion after victory sign
 -Transition away from sprite dependancy
@@ -176,16 +176,41 @@ List D: TODOs
 -comment hijacks in afterthoughts/simjack
 -Coin game cloud interaction
 -Add global sprite state for "carried by p2", or something equally absurd
--Triple-arm rotating platforms
+-Triple-arm rotating platforms - DONE
 -Enemies need to hate both players equally
 --boo
 --yellow koopa
+--bat
+--chuck - DONE
 -Make sure slowdown isn't dumb and easily fixable
 -Dry bones
 -Escalators
 -Make screen scroll trigger on p2 climbing/sprinting
 -Players die when they go off the bottom of the screen in vertical levels
 -Disable p1 cape powers I hate
--Friction on checkerboard platforms
+-Friction on checkerboard platforms - DONE
 -Podobo graphics
 -Climbing frame is wrong?? who did this
+
+List E: things to change to add another carrying sprite state
+00FB69 - Transform to goal-end item
+018133 - Mode table
+019399 - Whether to do object interaction?
+0193CA - Whether to reverse direction when hitting wall?
+01A4C9 - Cases for killing sprites with kicked object
+01A4DD - ^
+01A501 - ^
+01A515 - ^
+01A529 - ^
+01AA66 - Actually picking something up
+01C1F5 - Goal-end items opting out of some processing
+01C2D8 - Setting something down?
+01C2F2 - ^
+01C3B5 - Goal-end items, unknown
+01C704 - Goal-end items, physics
+01E1F6 - Check for key-keyhole contact
+01E6DA - Pick up item?
+028636 - Pick up purple block
+0293B6 - Opt out of some interaction processing?
+02AC08 - Find the sprite mario is currently carrying for subscreen exit
+02AC1D - Carrying the sprite in the new level

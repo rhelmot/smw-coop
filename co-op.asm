@@ -3,18 +3,18 @@
 ; ####  A patch for Super Mario World   ####
 ; ##########################################
 
-; Patch by Andrew Dutcher (Noobish Noobsicle, rhelmot)
+; Patch by Audrey Dutcher (Noobish Noobsicle, rhelmot)
 ; Insert with asar - Requires ~20,000 bytes of freespace in basic state
 
 ; Adjust the following variables to taste. 0 = False, 1 = True
 
-!THREEPLAYER = 0					; "Three player" mode
+!THREEPLAYER = 1					; "Three player" mode
 	; 3p mode isn't actually 3p co-op but rather a mode where there are three characters and which ones
 	; you play as depend on which save file you chose. Uses a /very/ different graphics format, which
 	; requires (implies) the SMALLPLAYERS flag and the SEPERATEGFX to be FALSE.
 
-!PLAYERKNOCKBACK = 0				; Use a knockback effect on player injury
-!SMALLPLAYERS = 1					; Allow players to have the "small mario" state
+!PLAYERKNOCKBACK = 1				; Use a knockback effect on player injury
+!SMALLPLAYERS = 0					; Allow players to have the "small mario" state
 !SEPERATEGFX = 0					; Use seperate graphics for players 1 and 2.
 
 org $009322
