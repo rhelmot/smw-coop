@@ -299,11 +299,11 @@ LDA $0DA3
 ORA $0DA5
 BIT #$80
 BNE LargeJump
-LDA #$E0
+LDA #$D0
 STA $AA,x
 RTS
 LargeJump:
-LDA #$B0
+LDA #$A8
 STA $AA,x
 RTS
 
