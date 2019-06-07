@@ -35,7 +35,7 @@ TXA
 CLC
 ADC #$0C
 TAX
-JSR UpdatePosY 
+JSR UpdatePosY
 LDX $0F65
 RTS
 
@@ -308,15 +308,13 @@ RTS
 ;
 ; SuperBoostSpeed
 ;
-; SuperBoost's Luigi's speed as though he stomped on an enemy.
+; SuperBoost's Luigi's speed as though he jumped on an spring.
 ;;;;;;;;;
 
 SuperBoostSpeed:
 ;PHX
 ;TYX
 ;PLX
-LDA #$08                ; \ Play sound effect
-STA $1DFC 
 LDA $0DA3
 ORA $0DA5
 BIT #$80
@@ -629,35 +627,45 @@ PLX
 PLY
 RTS
 
-KillNoSound:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; BounceSquashNoSound
+;
+; Squashes a sprite by bouncing on it no playing stomp sound
+; Example: DryBones, BonyBettle, DryBonesThrowBones
+;
+; Parameter: A=sprite state to put bounced sprite in
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+BounceSquashNoSound:
 STA $14C8,y		;set state to whatev~
 JSR BoostSpeed
-SpinKillEntry2:
+SpinKillEntryNoSound:
 PHY			;preserve/zero Y
 LDY #$00
-BRA Sensible2
-StarKillEntry2:		;Y=counter to use. 0=regular 1=star
+BRA SensibleNoSound
+StarKillEntryNoSound:		;Y=counter to use. 0=regular 1=star
 PHY
 LDY #$01
-Sensible2:
+SensibleNoSound:
 LDA $0F61,y
 INC
 STA $0F61,y
 CMP #$08
-BCC Lessthan1up2
+BCC Lessthan1upNoSound
 DEC
 STA $0F61,y
 LDA #$02
 STA $1DF9
 PLY
 JMP OneUpRex
-Lessthan1up2:
+Lessthan1upNoSound:
 LDA $0F61,y
 CLC
+ADC #$46
 LDA $0F61,y
 PLY
-LDA #$01
-JSL $02ACE5
+JSR GetPointsFromY
 RTS
 
 PushEdges:											;DON'T WALK OFF SCREEN
