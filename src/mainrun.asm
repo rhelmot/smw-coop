@@ -1,4 +1,6 @@
 MAIN_ROUTINE:
+LDA.W $13D4		;Pause Dont Animate!
+BNE DORETURN
 LDA $1504,x
 BEQ +
 JMP Animations      ; If there's an animation, redirect program flow to Animations
@@ -37,11 +39,13 @@ TSB $0DB9
 endif
 STZ $1588,x
 STZ $164A,x
-JSR TickPhysics
 JSR Objects
+LDA.W $13D4		;Pause Don't Move and don't interact with enemies!
+BNE DORETURN
 JSR Sprites
 JSR ExtSprites
 JSR ClusterSprites
+JSR TickPhysics
 
 NoInteraction:      ; AFAIK this label is never used?
 LDA $1570,x
