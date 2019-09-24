@@ -227,6 +227,8 @@ TileProps:
 		RTS
 
 CapeFrame:
+LDA.W $13D4		;\No Animate cape if are on pause
+		BNE .return		;/
 		LDA $1594,x
 		BNE .countdown
 		LDA $1588,x
@@ -607,6 +609,8 @@ CalcFrame:
 		STA $05
 		BRA .nocalcframe			; If in an animation, let the animators deal with the frame
 	+
+LDA.W $13D4		;\No Animate if are on pause
+		BNE -			;/
 		LDA $9D
 		BNE -
 		LDA $1426
