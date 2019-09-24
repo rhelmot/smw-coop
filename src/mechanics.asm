@@ -1,4 +1,7 @@
 Mechanics:
+LDA.W $13D4		;Pause Dont Move!
+BNE .shortend
+JSR DropItemBox		;I don't know, but i want player 2 use item box
 JSR JumpShift
 JSR GoalCheck
 JSR GoalWalk
@@ -19,6 +22,16 @@ JSR Fireballs
 JSR PushEdges
 JSR KillMe
 JSR ResetStar
+.shortend
+RTS
+
+DropItemBox:
+LDA $0DA3		;\Check Select key
+ORA $0DA5		;|	
+BIT #$20		;/
+BEQ .nodropitem
+JSL $028008		;Drop Item
+.nodropitem
 RTS
 
 JumpShift:
@@ -95,6 +108,8 @@ pullpc
 GoalWalk:
 		LDA $1493
 		BEQ .end
+		LDA $13C6	;\Not Move if Mario Can't Move on end of the level
+		BNE .notmove	;/Not Move and Lock Player 2
 		STZ $0DA3
 		STZ $0DA5
 		STZ $0DA7
@@ -110,6 +125,15 @@ GoalWalk:
 		LDA #$06
 		STA $B6,x
 	.end
+		RTS
+	.notmove
+		STZ $B6,x
+		STZ $0DA3
+		STZ $0DA5
+		STZ $0DA7
+		STZ $0DA9
+		STZ $14A7
+		STZ $14A9
 		RTS
 
 Climbing:
@@ -243,8 +267,8 @@ TRB $0F6A
 RTS
 
 Swimming:
-LDA #$23
-TRB $0DB9
+;LDA #$23	...Wait, Luigi Can't Look Up in the Water!?
+;TRB $0DB9	...But, Why?!
 LDY $AA,x
 LDA $0DB9
 BPL .regswim
